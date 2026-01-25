@@ -3,27 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sıvı Parallax Deneyimi</title>
+    <title>Eyüp Ensar | Portfolyo</title>
     
     <!-- Stylesheets -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg: #0d0d0d;
+            --bg: #0a0a0a;
             --accent: #00f3ff;
             --text: #ffffff;
+            --secondary: #1a1a1a;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         html.has-scroll-smooth {
             overflow: hidden;
-        }
-
-        html.has-scroll-dragging {
-            user-select: none;
         }
 
         body {
@@ -34,25 +31,25 @@
             width: 100%;
         }
 
+        /* Custom Cursor */
+        .cursor {
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            box-shadow: 0 0 20px var(--accent);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
         /* Locomotive Scroll Container */
         [data-scroll-container] {
             width: 100%;
             min-height: 100vh;
         }
 
-        /* Custom Cursor */
-        .cursor {
-            width: 15px;
-            height: 15px;
-            background: var(--accent);
-            border-radius: 50%;
-            position: fixed;
-            pointer-events: none;
-            z-index: 9999;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        /* Sections */
         section {
             width: 100%;
             min-height: 100vh;
@@ -61,24 +58,21 @@
             justify-content: center;
             align-items: center;
             position: relative;
-            padding: 10vh 5vw;
+            padding: 10vh 8vw;
         }
 
+        /* Hero Section */
         .hero {
             height: 100vh;
             text-align: center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
         }
 
         .hero h1 {
-            font-size: 12vw;
+            font-size: 10vw;
             font-weight: 900;
-            line-height: 0.9;
+            line-height: 0.85;
             text-transform: uppercase;
-            mix-blend-mode: difference;
+            margin-bottom: 20px;
         }
 
         .hero .outline {
@@ -86,13 +80,46 @@
             color: transparent;
         }
 
+        .hero-subtitle {
+            font-size: 1.2rem;
+            letter-spacing: 5px;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-top: 20px;
+        }
+
+        /* About Section */
+        .about-content {
+            max-width: 800px;
+            text-align: left;
+            margin-right: auto;
+        }
+
+        .about-content h2 {
+            font-size: 4rem;
+            margin-bottom: 30px;
+        }
+
+        .about-content p {
+            font-size: 1.5rem;
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+
         /* Project Grid */
+        .projects-header {
+            width: 100%;
+            margin-bottom: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
         .projects-grid {
             width: 100%;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 100px;
-            margin-top: 100px;
+            gap: 80px;
         }
 
         .project-item {
@@ -100,20 +127,18 @@
             width: 100%;
         }
 
-        /* WebGL Canvas Overlay */
         .image-wrapper {
             position: relative;
             width: 100%;
             aspect-ratio: 16/10;
             overflow: hidden;
-            background: #1a1a1a;
+            background: var(--secondary);
+            border-radius: 4px;
             cursor: pointer;
         }
 
         .image-wrapper img {
-            display: none;
-            width: 100%;
-            height: 100%;
+            display: none; /* WebGL overlay kullanıyor */
         }
 
         canvas.webgl-canvas {
@@ -125,43 +150,54 @@
         }
 
         .project-info {
-            margin-top: 20px;
+            margin-top: 25px;
+        }
+
+        .project-tag {
+            font-size: 0.8rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: block;
         }
 
         .project-info h3 {
-            font-size: 2rem;
-            color: var(--accent);
-        }
-
-        .project-info p {
-            opacity: 0.6;
-            margin-top: 10px;
+            font-size: 2.2rem;
+            font-weight: 700;
         }
 
         /* Footer */
         footer {
-            height: 80vh;
+            height: 100vh;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
         }
 
-        .contact-trigger {
-            font-size: 5vw;
+        .contact-text {
+            font-size: 6vw;
             font-weight: 900;
-            text-decoration: underline;
-            cursor: pointer;
-            transition: color 0.3s;
+            line-height: 1.1;
+            transition: 0.3s;
         }
 
-        .contact-trigger:hover {
+        .contact-link {
+            color: inherit;
+            text-decoration: none;
+            position: relative;
+            display: inline-block;
+        }
+
+        .contact-link:hover {
             color: var(--accent);
         }
 
         @media (max-width: 768px) {
-            .projects-grid { grid-template-columns: 1fr; }
-            .hero h1 { font-size: 18vw; }
+            .projects-grid { grid-template-columns: 1fr; gap: 40px; }
+            .hero h1 { font-size: 15vw; }
+            .about-content h2 { font-size: 2.5rem; }
         }
     </style>
 </head>
@@ -169,57 +205,81 @@
 
     <div class="cursor"></div>
 
-    <main data-scroll-container id="main-container">
+    <main data-scroll-container>
         
         <!-- Hero Section -->
         <section class="hero" data-scroll-section>
-            <h1 data-scroll data-scroll-speed="3">CREATIVE</h1>
-            <h1 class="outline" data-scroll data-scroll-speed="6">DESIGNER</h1>
-            <div style="margin-top: 50px;" data-scroll data-scroll-speed="1">
-                <p>SCROLL DOWN — FEEL THE FLOW</p>
+            <div data-scroll data-scroll-speed="2">
+                <span class="hero-subtitle">MERHABA, BEN</span>
+            </div>
+            <h1 data-scroll data-scroll-speed="4">EYÜP</h1>
+            <h1 class="outline" data-scroll data-scroll-speed="6">ENSAR</h1>
+            <div data-scroll data-scroll-speed="1">
+                <p class="hero-subtitle">GELİŞTİRİCİ & ÖĞRENCİ</p>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section class="about" data-scroll-section>
+            <div class="about-content" data-scroll data-scroll-speed="1">
+                <h2 data-scroll data-scroll-delay="0.1" data-scroll-speed="2">Kodla Geleceği İnşa Ediyorum.</h2>
+                <p data-scroll data-scroll-speed="1">
+                    Sürekli öğrenen bir geliştiriciyim. Algoritmaların gücüne ve temiz kodun estetiğine inanıyorum. 
+                    Öğrencilik hayatımda edindiğim teorik bilgileri pratik projelerle hayata geçiriyor, 
+                    dijital dünyada iz bırakacak çözümler üretiyorum.
+                </p>
             </div>
         </section>
 
         <!-- Work Section -->
         <section id="work" data-scroll-section>
+            <div class="projects-header">
+                <h2 style="font-size: 3rem;">SEÇİLMİŞ PROJELER</h2>
+                <p style="opacity: 0.5;">(2024 - 2025)</p>
+            </div>
+
             <div class="projects-grid">
+                <!-- Project 1 -->
                 <div class="project-item" data-scroll data-scroll-speed="1">
                     <div class="image-wrapper shader-item">
-                        <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop" alt="Project 1">
+                        <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1000&auto=format&fit=crop" alt="Yazılım Geliştirme">
                     </div>
                     <div class="project-info">
-                        <h3>Likit Vizyon</h3>
-                        <p>Web Design / UI / UX</p>
+                        <span class="project-tag">Web Geliştirme</span>
+                        <h3>Neural Dashboard</h3>
                     </div>
                 </div>
 
-                <div class="project-item" data-scroll data-scroll-speed="2">
+                <!-- Project 2 -->
+                <div class="project-item" data-scroll data-scroll-speed="2.5">
                     <div class="image-wrapper shader-item">
-                        <img src="https://images.unsplash.com/photo-1633167606207-d840b5070fc2?q=80&w=1000&auto=format&fit=crop" alt="Project 2">
+                        <img src="https://images.unsplash.com/photo-1551288049-bbdac8a28a1e?q=80&w=1000&auto=format&fit=crop" alt="Veri Görselleştirme">
                     </div>
                     <div class="project-info">
-                        <h3>Dijital Akış</h3>
-                        <p>Branding / 3D</p>
+                        <span class="project-tag">Veri Bilimi</span>
+                        <h3>Insight Engine</h3>
                     </div>
                 </div>
                 
-                <div class="project-item" data-scroll data-scroll-speed="1.5">
+                <!-- Project 3 -->
+                <div class="project-item" data-scroll data-scroll-speed="1.2">
                     <div class="image-wrapper shader-item">
-                        <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1000&auto=format&fit=crop" alt="Project 3">
+                        <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1000&auto=format&fit=crop" alt="Siber Güvenlik">
                     </div>
                     <div class="project-info">
-                        <h3>Neon Gece</h3>
-                        <p>Visual Effects</p>
+                        <span class="project-tag">Siber Güvenlik</span>
+                        <h3>Cipher Shield</h3>
                     </div>
                 </div>
 
-                <div class="project-item" data-scroll data-scroll-speed="0.5">
+                <!-- Project 4 -->
+                <div class="project-item" data-scroll data-scroll-speed="0.8">
                     <div class="image-wrapper shader-item">
-                        <img src="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=1000&auto=format&fit=crop" alt="Project 4">
+                        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1000&auto=format&fit=crop" alt="Donanım & Yazılım">
                     </div>
                     <div class="project-info">
-                        <h3>Minimal Dalga</h3>
-                        <p>Art Direction</p>
+                        <span class="project-tag">IoT / Robotik</span>
+                        <h3>Smart Node</h3>
                     </div>
                 </div>
             </div>
@@ -227,7 +287,17 @@
 
         <!-- Footer -->
         <footer data-scroll-section>
-            <div class="contact-trigger" data-scroll data-scroll-speed="2">LET'S WORK TOGETHER?</div>
+            <div data-scroll data-scroll-speed="3">
+                <p style="margin-bottom: 20px; opacity: 0.5;">İLETİŞİME GEÇ</p>
+                <div class="contact-text">
+                    <a href="mailto:ensar@example.com" class="contact-link">HAYDİ <br> KONUŞALIM</a>
+                </div>
+            </div>
+            
+            <div style="position: absolute; bottom: 40px; width: 100%; padding: 0 8vw; display: flex; justify-content: space-between; opacity: 0.3; font-size: 0.8rem;">
+                <p>© 2025 EYÜP ENSAR</p>
+                <p>GELİŞTİRİCİ & ÖĞRENCİ</p>
+            </div>
         </footer>
 
     </main>
@@ -238,32 +308,35 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
     <script>
-        // 1. Initialize Locomotive Scroll
+        // Locomotive Scroll Başlatma
         const scroll = new LocomotiveScroll({
             el: document.querySelector('[data-scroll-container]'),
             smooth: true,
             multiplier: 1.0,
-            lerp: 0.05,
-            touchMultiplier: 2
+            lerp: 0.07
         });
 
-        // Force update after initialization
-        setTimeout(() => {
-            scroll.update();
-        }, 1000);
+        // Sayfa her güncellendiğinde Locomotive'i yenile
+        new ResizeObserver(() => scroll.update()).observe(document.querySelector('[data-scroll-container]'));
 
-        // 2. Custom Cursor
+        // Özel İmleç
         const cursor = document.querySelector('.cursor');
         document.addEventListener('mousemove', (e) => {
             gsap.to(cursor, {
                 x: e.clientX,
                 y: e.clientY,
-                duration: 0.3,
+                duration: 0.4,
                 ease: "power2.out"
             });
         });
 
-        // 3. WebGL Shader Logic
+        // Hover Efektleri
+        document.querySelectorAll('a, .image-wrapper').forEach(el => {
+            el.addEventListener('mouseenter', () => gsap.to(cursor, { scale: 6, opacity: 0.2, backgroundColor: '#00f3ff' }));
+            el.addEventListener('mouseleave', () => gsap.to(cursor, { scale: 1, opacity: 1, backgroundColor: '#00f3ff' }));
+        });
+
+        // WebGL Likit Shader Sınıfı
         class LiquidImage {
             constructor(container) {
                 this.container = container;
@@ -278,14 +351,11 @@
                 container.appendChild(this.renderer.domElement);
                 this.renderer.domElement.classList.add('webgl-canvas');
 
-                this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 0.1, 100);
+                this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 0.1, 10);
                 this.camera.position.z = 1;
 
                 this.loader = new THREE.TextureLoader();
-                this.texture = this.loader.load(this.img.src, () => {
-                    // Update scroll height once images are loaded
-                    scroll.update();
-                });
+                this.texture = this.loader.load(this.img.src);
                 
                 this.uniforms = {
                     uTime: { value: 0 },
@@ -320,9 +390,11 @@
                         void main() {
                             vec2 uv = vUv;
                             
-                            float distortion = sin(uv.y * 10.0 + uTime) * 0.02 * uHover;
-                            uv.x += distortion;
+                            // Dalgalanma yoğunluğu
+                            float wave = sin(uv.y * 10.0 + uTime * 0.5) * 0.02 * uHover;
+                            uv.x += wave;
                             
+                            // Mouse etkileşimi
                             float dist = distance(vUv, uMouse);
                             float circle = smoothstep(0.4, 0.0, dist);
                             uv += (vUv - uMouse) * circle * 0.1 * uHover;
@@ -336,8 +408,8 @@
             }
 
             initEvents() {
-                this.container.addEventListener('mouseenter', () => gsap.to(this.uniforms.uHover, { value: 1, duration: 0.8 }));
-                this.container.addEventListener('mouseleave', () => gsap.to(this.uniforms.uHover, { value: 0, duration: 0.8 }));
+                this.container.addEventListener('mouseenter', () => gsap.to(this.uniforms.uHover, { value: 1, duration: 1 }));
+                this.container.addEventListener('mouseleave', () => gsap.to(this.uniforms.uHover, { value: 0, duration: 1 }));
                 this.container.addEventListener('mousemove', (e) => {
                     const rect = this.container.getBoundingClientRect();
                     this.uniforms.uMouse.value.x = (e.clientX - rect.left) / this.width;
@@ -352,21 +424,16 @@
             }
         }
 
-        // Init and Update
-        window.addEventListener('load', () => {
+        // Başlatma
+        window.onload = () => {
             document.querySelectorAll('.shader-item').forEach(item => new LiquidImage(item));
             scroll.update();
-        });
+        };
 
-        // Recalculate on resize
+        // Resize yönetimi
         window.addEventListener('resize', () => {
             scroll.update();
         });
-
-        // Periodic update for security
-        setInterval(() => {
-            scroll.update();
-        }, 3000);
     </script>
 </body>
 </html>
