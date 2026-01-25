@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sıvı Parallax Deneyimi</title>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #0d0d0d;
+            --accent: #00f3ff;
+            --text: #ffffff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html.has-scroll-smooth {
+            overflow: hidden;
+        }
+
+        html.has-scroll-dragging {
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+            width: 100%;
+        }
+
+        /* Locomotive Scroll Container */
+        [data-scroll-container] {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* Custom Cursor */
+        .cursor {
+            width: 15px;
+            height: 15px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Sections */
+        section {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 10vh 5vw;
+        }
+
+        .hero {
+            height: 100vh;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .hero h1 {
+            font-size: 12vw;
+            font-weight: 900;
+            line-height: 0.9;
+            text-transform: uppercase;
+            mix-blend-mode: difference;
+        }
+
+        .hero .outline {
+            -webkit-text-stroke: 1px var(--text);
+            color: transparent;
+        }
+
+        /* Project Grid */
+        .projects-grid {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 100px;
+            margin-top: 100px;
+        }
+
+        .project-item {
+            position: relative;
+            width: 100%;
+        }
+
+        /* WebGL Canvas Overlay */
+        .image-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/10;
+            overflow: hidden;
+            background: #1a1a1a;
+            cursor: pointer;
+        }
+
+        .image-wrapper img {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        canvas.webgl-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .project-info {
+            margin-top: 20px;
+        }
+
+        .project-info h3 {
+            font-size: 2rem;
+            color: var(--accent);
+        }
+
+        .project-info p {
+            opacity: 0.6;
+            margin-top: 10px;
+        }
+
+        /* Footer */
+        footer {
+            height: 80vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .contact-trigger {
+            font-size: 5vw;
+            font-weight: 900;
+            text-decoration: underline;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .contact-trigger:hover {
+            color: var(--accent);
+        }
+
+        @media (max-width: 768px) {
+            .projects-grid { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 18vw; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cursor"></div>
+
+    <main data-scroll-container id="main-container">
+        
+        <!-- Hero Section -->
+        <section class="hero" data-scroll-section>
+            <h1 data-scroll data-scroll-speed="3">CREATIVE</h1>
+            <h1 class="outline" data-scroll data-scroll-speed="6">DESIGNER</h1>
+            <div style="margin-top: 50px;" data-scroll data-scroll-speed="1">
+                <p>SCROLL DOWN — FEEL THE FLOW</p>
+            </div>
+        </section>
+
+        <!-- Work Section -->
+        <section id="work" data-scroll-section>
+            <div class="projects-grid">
+                <div class="project-item" data-scroll data-scroll-speed="1">
+                    <div class="image-wrapper shader-item">
+                        <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop" alt="Project 1">
+                    </div>
+                    <div class="project-info">
+                        <h3>Likit Vizyon</h3>
+                        <p>Web Design / UI / UX</p>
+                    </div>
+                </div>
+
+                <div class="project-item" data-scroll data-scroll-speed="2">
+                    <div class="image-wrapper shader-item">
+                        <img src="https://images.unsplash.com/photo-1633167606207-d840b5070fc2?q=80&w=1000&auto=format&fit=crop" alt="Project 2">
+                    </div>
+                    <div class="project-info">
+                        <h3>Dijital Akış</h3>
+                        <p>Branding / 3D</p>
+                    </div>
+                </div>
+                
+                <div class="project-item" data-scroll data-scroll-speed="1.5">
+                    <div class="image-wrapper shader-item">
+                        <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1000&auto=format&fit=crop" alt="Project 3">
+                    </div>
+                    <div class="project-info">
+                        <h3>Neon Gece</h3>
+                        <p>Visual Effects</p>
+                    </div>
+                </div>
+
+                <div class="project-item" data-scroll data-scroll-speed="0.5">
+                    <div class="image-wrapper shader-item">
+                        <img src="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=1000&auto=format&fit=crop" alt="Project 4">
+                    </div>
+                    <div class="project-info">
+                        <h3>Minimal Dalga</h3>
+                        <p>Art Direction</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer data-scroll-section>
+            <div class="contact-trigger" data-scroll data-scroll-speed="2">LET'S WORK TOGETHER?</div>
+        </footer>
+
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <script>
+        // 1. Initialize Locomotive Scroll
+        const scroll = new LocomotiveScroll({
+            el: document.querySelector('[data-scroll-container]'),
+            smooth: true,
+            multiplier: 1.0,
+            lerp: 0.05,
+            touchMultiplier: 2
+        });
+
+        // Force update after initialization
+        setTimeout(() => {
+            scroll.update();
+        }, 1000);
+
+        // 2. Custom Cursor
+        const cursor = document.querySelector('.cursor');
+        document.addEventListener('mousemove', (e) => {
+            gsap.to(cursor, {
+                x: e.clientX,
+                y: e.clientY,
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        });
+
+        // 3. WebGL Shader Logic
+        class LiquidImage {
+            constructor(container) {
+                this.container = container;
+                this.img = container.querySelector('img');
+                this.scene = new THREE.Scene();
+                this.width = container.offsetWidth;
+                this.height = container.offsetHeight;
+                
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                this.renderer.setSize(this.width, this.height);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                container.appendChild(this.renderer.domElement);
+                this.renderer.domElement.classList.add('webgl-canvas');
+
+                this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 0.1, 100);
+                this.camera.position.z = 1;
+
+                this.loader = new THREE.TextureLoader();
+                this.texture = this.loader.load(this.img.src, () => {
+                    // Update scroll height once images are loaded
+                    scroll.update();
+                });
+                
+                this.uniforms = {
+                    uTime: { value: 0 },
+                    uMouse: { value: new THREE.Vector2(0.5, 0.5) },
+                    uHover: { value: 0 },
+                    uTexture: { value: this.texture }
+                };
+
+                this.initMesh();
+                this.initEvents();
+                this.animate();
+            }
+
+            initMesh() {
+                const geometry = new THREE.PlaneGeometry(2, 2);
+                const material = new THREE.ShaderMaterial({
+                    uniforms: this.uniforms,
+                    vertexShader: `
+                        varying vec2 vUv;
+                        void main() {
+                            vUv = uv;
+                            gl_Position = vec4(position, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        varying vec2 vUv;
+                        uniform sampler2D uTexture;
+                        uniform float uTime;
+                        uniform float uHover;
+                        uniform vec2 uMouse;
+
+                        void main() {
+                            vec2 uv = vUv;
+                            
+                            float distortion = sin(uv.y * 10.0 + uTime) * 0.02 * uHover;
+                            uv.x += distortion;
+                            
+                            float dist = distance(vUv, uMouse);
+                            float circle = smoothstep(0.4, 0.0, dist);
+                            uv += (vUv - uMouse) * circle * 0.1 * uHover;
+
+                            gl_FragColor = texture2D(uTexture, uv);
+                        }
+                    `
+                });
+                this.mesh = new THREE.Mesh(geometry, material);
+                this.scene.add(this.mesh);
+            }
+
+            initEvents() {
+                this.container.addEventListener('mouseenter', () => gsap.to(this.uniforms.uHover, { value: 1, duration: 0.8 }));
+                this.container.addEventListener('mouseleave', () => gsap.to(this.uniforms.uHover, { value: 0, duration: 0.8 }));
+                this.container.addEventListener('mousemove', (e) => {
+                    const rect = this.container.getBoundingClientRect();
+                    this.uniforms.uMouse.value.x = (e.clientX - rect.left) / this.width;
+                    this.uniforms.uMouse.value.y = 1.0 - (e.clientY - rect.top) / this.height;
+                });
+            }
+
+            animate() {
+                this.uniforms.uTime.value += 0.05;
+                this.renderer.render(this.scene, this.camera);
+                requestAnimationFrame(this.animate.bind(this));
+            }
+        }
+
+        // Init and Update
+        window.addEventListener('load', () => {
+            document.querySelectorAll('.shader-item').forEach(item => new LiquidImage(item));
+            scroll.update();
+        });
+
+        // Recalculate on resize
+        window.addEventListener('resize', () => {
+            scroll.update();
+        });
+
+        // Periodic update for security
+        setInterval(() => {
+            scroll.update();
+        }, 3000);
+    </script>
+</body>
+</html>
