@@ -2,538 +2,471 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eyüp Ensar | Geliştirici Deneyimi</title>
-    
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>8C Highway 3D: Day & Night</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root {
-            --bg: #050505;
-            --accent: #00f3ff;
-            --text: #ffffff;
-            --secondary: #111111;
-            --glass: rgba(255, 255, 255, 0.03);
+            --neon-blue: #00f2ff;
+            --neon-purple: #bc13fe;
+            --neon-red: #ff003c;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        html.has-scroll-smooth { overflow: hidden; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            overflow: hidden;
-            width: 100%;
-        }
-
-        /* Cursor */
-        .cursor {
-            width: 10px;
-            height: 10px;
-            background: var(--accent);
-            border-radius: 50%;
-            position: fixed;
-            pointer-events: none;
-            z-index: 9999;
-            box-shadow: 0 0 15px var(--accent);
-            transition: transform 0.15s ease-out;
-        }
-
-        /* Sections */
-        section {
-            width: 100%;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 10vh 10vw;
-            position: relative;
-        }
-
-        /* Hero */
-        .hero { text-align: left; align-items: flex-start; }
-        .hero h1 { font-size: 14vw; font-weight: 900; line-height: 0.8; letter-spacing: -0.05em; }
-        .hero .outline { -webkit-text-stroke: 1px rgba(255,255,255,0.3); color: transparent; }
-        .hero-info { margin-top: 40px; display: flex; gap: 40px; }
-        .hero-info p { font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase; opacity: 0.6; }
-
-        /* Knowledge Base Section */
-        .knowledge-section { background: #080808; overflow: hidden; }
-        .kb-header { font-size: 5vw; font-weight: 900; margin-bottom: 100px; text-align: center; }
+        body { margin: 0; background: #020617; color: white; overflow: hidden; font-family: 'Inter', sans-serif; touch-action: none; }
+        #webgl-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .car-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); min-width: 160px; }
+        .car-card.locked { opacity: 0.4; filter: grayscale(1); }
+        .car-card.selected-p1 { border: 2px solid var(--neon-blue); box-shadow: 0 0 15px var(--neon-blue); transform: scale(1.05); }
+        .car-card.selected-p2 { border: 2px solid var(--neon-purple); box-shadow: 0 0 15px var(--neon-purple); transform: scale(1.05); }
+        .nos-fill { transition: width 0.1s ease-out; }
+        .hud-inactive { opacity: 0.2; filter: blur(2px); }
+        @keyframes blink-red { 0%, 100% { background: rgba(255, 0, 60, 0.2); border-color: #ff003c; } 50% { background: rgba(255, 0, 60, 0.5); border-color: #ffffff; } }
+        .warning-box { animation: blink-red 0.4s infinite; }
+        .bonus-text { position: absolute; pointer-events: none; font-weight: 900; font-family: 'Orbitron'; animation: floatUp 1s forwards; z-index: 60; text-shadow: 0 0 10px currentColor; }
+        @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-100px) scale(1.5); opacity: 0; } }
         
-        .kb-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-        }
-
-        .kb-card {
-            background: var(--glass);
-            border: 1px solid rgba(255,255,255,0.05);
-            padding: 40px;
-            border-radius: 20px;
-            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .kb-card:hover {
-            border-color: var(--accent);
-            transform: translateY(-10px);
-            background: rgba(0, 243, 255, 0.05);
-        }
-
-        .kb-card h3 { font-family: 'Fira Code', monospace; color: var(--accent); margin-bottom: 20px; font-size: 1.5rem; }
-        .kb-card p { line-height: 1.8; opacity: 0.7; font-size: 1rem; }
-        .kb-card .code-snip { font-family: 'Fira Code', monospace; background: #000; padding: 10px; border-radius: 5px; margin-top: 20px; font-size: 0.8rem; color: #888; display: block; }
-
-        /* Slide-in Effects */
-        .slide-right { transform: translateX(100px); opacity: 0; transition: all 1s ease-out; }
-        .slide-left { transform: translateX(-100px); opacity: 0; transition: all 1s ease-out; }
-        .is-inview .slide-right, .is-inview .slide-left { transform: translateX(0); opacity: 1; }
-
-        /* Projects */
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 60px;
-            width: 100%;
-        }
-
-        .image-wrapper { 
-            position: relative; 
-            width: 100%; 
-            aspect-ratio: 16/9; 
-            border-radius: 12px; 
-            overflow: hidden; 
-            background: #111;
-        }
-        .image-wrapper img { display: none; }
-        canvas.webgl-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-
-        /* Tech Details Section */
-        .tech-deep-dive { padding-top: 20vh; padding-bottom: 20vh; }
-        .tech-row { 
-            display: flex; 
-            justify-content: space-between; 
-            border-bottom: 1px solid rgba(255,255,255,0.1); 
-            padding: 40px 0; 
-            transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-        }
-        .tech-row:hover { padding-left: 50px; color: var(--accent); background: rgba(255,255,255,0.02); }
-        .tech-title { font-size: 2.5rem; font-weight: 700; }
-        .tech-desc { max-width: 400px; opacity: 0.6; text-align: right; }
-
-        /* Game Section */
-        .game-section {
-            background: #000;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
-        #game-container {
-            position: relative;
-            width: 85vw;
-            height: 70vh;
-            border: 1px solid rgba(0, 243, 255, 0.2);
-            border-radius: 20px;
-            background: #050505;
-            overflow: hidden;
-            cursor: crosshair;
-        }
-        .game-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(0,0,0,0.85);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-        }
-        .start-btn {
-            background: transparent;
-            color: var(--accent);
-            border: 1px solid var(--accent);
-            padding: 20px 40px;
-            font-family: 'Fira Code', monospace;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        .start-btn:hover {
-            background: var(--accent);
-            color: #000;
-            box-shadow: 0 0 30px var(--accent);
-        }
-        #player {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background: var(--accent);
-            box-shadow: 0 0 25px var(--accent);
-            border-radius: 8px;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 20;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Fira Code';
-            font-size: 0.6rem;
-            color: #000;
-            font-weight: bold;
-        }
-        .obstacle {
-            position: absolute;
-            background: rgba(0, 243, 255, 0.1);
-            border: 1px solid rgba(0, 243, 255, 0.4);
-            color: var(--accent);
-            font-family: 'Fira Code', monospace;
-            padding: 10px;
-            white-space: nowrap;
-            pointer-events: none;
-            font-size: 0.8rem;
-            border-radius: 4px;
-        }
-        .game-stat {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-family: 'Fira Code';
-            color: var(--accent);
-            z-index: 50;
-        }
-
-        /* Footer */
-        footer { height: 100vh; text-align: center; justify-content: space-between; padding: 10vh 0; }
-        .big-cta { font-size: 10vw; font-weight: 900; text-decoration: none; color: white; transition: 0.5s; }
-        .big-cta:hover { -webkit-text-stroke: 2px var(--accent); color: transparent; }
-
-        @media (max-width: 1024px) {
-            .kb-grid { grid-template-columns: 1fr; }
-            .projects-grid { grid-template-columns: 1fr; }
-            .tech-row { flex-direction: column; text-align: left; gap: 10px; }
-            .tech-desc { text-align: left; }
-        }
+        /* Time Toggle Style */
+        .toggle-btn { position: relative; width: 120px; height: 40px; border-radius: 20px; background: #1e293b; cursor: pointer; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s; }
+        .toggle-btn.night { background: #0f172a; border-color: #3b82f6; }
+        .toggle-circle { position: absolute; left: 4px; width: 32px; height: 32px; border-radius: 50%; background: #fbbf24; transition: all 0.3s; box-shadow: 0 0 10px #fbbf24; }
+        .toggle-btn.night .toggle-circle { left: 84px; background: #f8fafc; box-shadow: 0 0 15px #f8fafc; }
     </style>
 </head>
 <body>
 
-    <div class="cursor"></div>
+<div id="game-container" class="relative w-full h-screen flex items-center justify-center overflow-hidden">
+    <div id="webgl-container"></div>
+    <div id="speed-vignette" class="absolute inset-0 pointer-events-none transition-opacity duration-300 opacity-0 z-10" style="box-shadow: inset 0 0 150px rgba(0,242,255,0.2);"></div>
 
-    <main data-scroll-container>
-        
-        <!-- Section: Hero -->
-        <section class="hero" data-scroll-section>
-            <div data-scroll data-scroll-speed="2">
-                <h1 data-scroll data-scroll-direction="horizontal" data-scroll-speed="-2">EYÜP ENSAR</h1>
-                <h1 class="outline" data-scroll data-scroll-direction="horizontal" data-scroll-speed="2">DEVELOPER</h1>
-            </div>
-            <div class="hero-info" data-scroll data-scroll-speed="1">
-                <div class="slide-left"><p>Konum</p><span>Türkiye</span></div>
-                <div><p>Rol</p><span>Full-Stack & Öğrenci</span></div>
-                <div class="slide-right"><p>Odak</p><span>Performans & Deneyim</span></div>
-            </div>
-        </section>
+    <!-- HUD -->
+    <div id="game-hud" class="absolute inset-0 p-6 pointer-events-none z-30 hidden">
+        <div id="p1-hud-box" class="absolute bottom-6 left-6 flex flex-col gap-3 items-start transition-all">
+            <div id="p1-revive-msg" class="hidden text-yellow-400 font-bold bg-black/80 px-4 py-2 rounded border border-yellow-500 text-xs tracking-widest uppercase mb-2">NİTRO İLE CANLAN (Kalan: <span id="p1-revive-count">2</span>)</div>
+            <div class="text-[10px] font-bold text-cyan-400 uppercase tracking-[0.2em] flex items-center gap-2">P1: <span id="p1-car-name-hud">---</span> <span id="p1-multi-badge" class="bg-blue-600/50 px-2 py-0.5 rounded text-[10px] hidden">x1</span></div>
+            <div class="w-32 h-1.5 bg-slate-900 rounded-full border border-white/10 p-0.5 shadow-[0_0_10px_rgba(0,242,255,0.5)]"><div id="nos-fill-p1" class="nos-fill h-full bg-gradient-to-r from-cyan-400 to-blue-600 rounded-full"></div></div>
+            <div class="glass p-3 rounded-xl min-w-[140px]"><div class="text-[8px] text-cyan-400 font-bold uppercase">Skor: <span id="p1-live-score">0</span></div><div id="speed-meter-p1" class="text-xl font-orbitron font-black italic">0</div></div>
+        </div>
+        <div id="p2-hud-box" class="absolute bottom-6 right-6 flex flex-col gap-3 items-end hidden transition-all">
+            <div id="p2-revive-msg" class="hidden text-yellow-400 font-bold bg-black/80 px-4 py-2 rounded border border-yellow-500 text-xs tracking-widest uppercase mb-2">NİTRO İLE CANLAN (Kalan: <span id="p2-revive-count">2</span>)</div>
+            <div class="text-[10px] font-bold text-purple-400 uppercase tracking-[0.2em] flex items-center gap-2"><span id="p2-multi-badge" class="bg-purple-600/50 px-2 py-0.5 rounded text-[10px] hidden">x1</span>P2: <span id="p2-car-name-hud">---</span></div>
+            <div class="w-32 h-1.5 bg-slate-900 rounded-full border border-white/10 p-0.5 shadow-[0_0_10px_rgba(188,19,254,0.5)]"><div id="nos-fill-p2" class="nos-fill h-full bg-gradient-to-r from-purple-400 to-pink-600 rounded-full"></div></div>
+            <div class="glass p-3 rounded-xl min-w-[140px] text-right"><div class="text-[8px] text-purple-400 font-bold uppercase">Skor: <span id="p2-live-score">0</span></div><div id="speed-meter-p2" class="text-xl font-orbitron font-black italic">0</div></div>
+        </div>
+        <div class="absolute top-6 left-1/2 -translate-x-1/2 flex flex-col items-center">
+             <div class="glass px-8 py-3 rounded-full flex gap-8 items-center border-white/20"><div class="text-center"><div class="text-[8px] text-blue-400 font-bold uppercase tracking-widest">Global Skor</div><div id="hud-score" class="text-2xl font-orbitron font-bold">0</div></div></div>
+        </div>
+    </div>
 
-        <!-- Section: About -->
-        <section data-scroll-section>
-            <div style="max-width: 900px;" data-scroll data-scroll-speed="1">
-                <h2 class="slide-left" style="font-size: 4rem; margin-bottom: 40px;">Dijital Dünyanın <span style="color:var(--accent)">Anatomisi</span></h2>
-                <p class="slide-right" style="font-size: 1.8rem; line-height: 1.4; opacity: 0.8;">
-                    Modern web sadece görsellikten ibaret değildir. HTML iskelettir, CSS ruhtur, JavaScript ise hayattır. Ben bu üçlüyü en performanslı şekilde bir araya getiriyorum.
-                </p>
-            </div>
-        </section>
-
-        <!-- Section: Technical Knowledge Base -->
-        <section class="knowledge-section" data-scroll-section>
-            <h2 class="kb-header" data-scroll data-scroll-speed="2">TEKNİK BİLGİ MERKEZİ</h2>
-            <div class="kb-grid">
-                <div class="kb-card slide-left" data-scroll data-scroll-speed="1">
-                    <h3>01. Semantic HTML5</h3>
-                    <p>Web sayfasının anlamını açıklar. Erişilebilirlik ve SEO için temeldir.</p>
-                    <span class="code-snip">&lt;article&gt; // Mantıksal yapı &lt;/article&gt;</span>
-                </div>
-                <div class="kb-card" data-scroll data-scroll-speed="2">
-                    <h3>02. CSS Architecture</h3>
-                    <p>Box-Model ve GPU hızlandırmalı animasyonlar ile akıcı bir kullanıcı deneyimi.</p>
-                    <span class="code-snip">will-change: transform;</span>
-                </div>
-                <div class="kb-card slide-right" data-scroll data-scroll-speed="1.5">
-                    <h3>03. JavaScript Runtime</h3>
-                    <p>Event Loop ve bellek yönetimi. Yüksek performanslı asenkron işlemler.</p>
-                    <span class="code-snip">async/await // Akış kontrolü</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section: Projects -->
-        <section data-scroll-section>
-            <div class="projects-grid">
-                <div class="project-item slide-left" data-scroll data-scroll-speed="1">
-                    <div class="image-wrapper shader-item">
-                        <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1200&auto=format&fit=crop" alt="Cybersecurity">
-                    </div>
-                    <div style="margin-top: 20px;">
-                        <p style="color:var(--accent); font-size: 0.8rem;">WEBGL / THREE.JS</p>
-                        <h3>Likit Arayüzler</h3>
-                    </div>
-                </div>
-                <div class="project-item slide-right" data-scroll data-scroll-speed="2">
-                    <div class="image-wrapper shader-item">
-                        <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc51?q=80&w=1200&auto=format&fit=crop" alt="Servers">
-                    </div>
-                    <div style="margin-top: 20px;">
-                        <p style="color:var(--accent); font-size: 0.8rem;">BACKEND / NODE.JS</p>
-                        <h3>Veri Mimarisi</h3>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section: Parallax Game -->
-        <section class="game-section" data-scroll-section>
-            <div id="game-container">
-                <div class="game-overlay" id="game-overlay">
-                    <h2 style="font-size: 3rem; margin-bottom: 20px;">SPACE CODE</h2>
-                    <p style="margin-bottom: 30px; opacity: 0.6;">Kırmızı hatalardan kaç, yeşil temiz kodları topla.</p>
-                    <button class="start-btn" onclick="startGame()">Sistemi Başlat</button>
-                </div>
-                <div id="player">JS</div>
-                <div class="game-stat" id="score-text">CORE_HEALTH: 100% | SCORE: 0</div>
-            </div>
-        </section>
-
-        <!-- Section: Contact / Footer -->
-        <footer data-scroll-section>
-            <div data-scroll data-scroll-speed="3">
-                <p style="letter-spacing: 5px; opacity: 0.5;">GELECEĞİ KONUŞALIM</p>
-                <a href="mailto:ensar@tech.com" class="big-cta">BANA ULAŞ</a>
-            </div>
+    <!-- Ayarlar Modal -->
+    <div id="settings-modal" class="absolute inset-0 bg-black/90 flex items-center justify-center z-[150] hidden backdrop-blur-md">
+        <div class="glass p-8 rounded-3xl w-[400px] max-w-[90%] border border-blue-500/30">
+            <h2 class="text-3xl font-orbitron font-black text-white mb-8 uppercase italic">AYARLAR</h2>
             
-            <div style="display: flex; justify-content: space-between; width: 100%; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
-                <p>© 2026 EYÜP ENSAR</p>
-                <p>HEDEF: INFINITE LEARNING</p>
+            <div class="mb-8">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 block">GÜN / GECE AYARI</label>
+                <div id="time-toggle" class="toggle-btn mx-auto">
+                    <span class="text-[10px] font-bold text-yellow-500 ml-1">GÜNDÜZ</span>
+                    <div class="toggle-circle"></div>
+                    <span class="text-[10px] font-bold text-blue-400 mr-2">GECE</span>
+                </div>
             </div>
-        </footer>
 
-    </main>
+            <div class="mb-8">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 block">Trafik Yoğunluğu</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <button class="setting-btn py-3 rounded-xl bg-slate-800 text-white font-bold text-sm" data-val="0.5">AZ</button>
+                    <button class="setting-btn py-3 rounded-xl bg-blue-600 text-white font-bold text-sm" data-val="1.0">NORMAL</button>
+                    <button class="setting-btn py-3 rounded-xl bg-slate-800 text-white font-bold text-sm" data-val="1.5">YOĞUN</button>
+                    <button class="setting-btn py-3 rounded-xl bg-slate-800 text-white font-bold text-sm" data-val="2.5">KAOS</button>
+                </div>
+            </div>
+            <button id="close-settings" class="w-full py-4 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold font-orbitron text-white uppercase">KAPAT</button>
+        </div>
+    </div>
 
-    <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- Menü -->
+    <div id="menu-screen" class="absolute inset-0 bg-[#020617] flex flex-col items-center justify-center z-50 p-6 overflow-y-auto">
+        <div class="w-full max-w-6xl">
+            <div class="flex flex-row justify-between items-center mb-8">
+                <div>
+                    <div class="text-blue-500 font-bold tracking-[0.4em] uppercase text-xs mb-1">V5 3D ENGINE</div>
+                    <h1 class="text-6xl font-orbitron font-black italic text-white tracking-tighter uppercase">8C HIGHWAY</h1>
+                </div>
+                <div class="flex gap-4 items-center">
+                    <button id="open-settings" class="glass p-4 rounded-2xl hover:bg-white/10 transition-colors">
+                        <svg class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </button>
+                    <div class="glass px-8 py-4 rounded-2xl flex items-center gap-4"><span id="menu-credits" class="text-3xl font-orbitron text-yellow-400 font-bold">0</span><span class="text-slate-400 text-xs font-bold uppercase">KREDİ</span></div>
+                </div>
+            </div>
+            <div class="flex gap-4 mb-10 items-center">
+                <button id="mode-single" class="px-8 py-3 rounded-xl font-bold transition-all border-2">TEK KİŞİLİK</button>
+                <button id="mode-multi" class="px-8 py-3 rounded-xl font-bold transition-all border-2">İKİ KİŞİLİK</button>
+            </div>
+            <div id="car-list" class="flex gap-6 mb-10 overflow-x-auto pb-6 pt-4 px-2"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="glass p-8 rounded-3xl flex justify-between items-center">
+                    <div><h3 id="info-car-name" class="text-3xl font-orbitron font-black italic mb-2 uppercase text-white">---</h3><p id="info-car-desc" class="text-slate-400 text-sm italic">---</p></div>
+                    <div class="text-right space-y-4 min-w-[150px]">
+                        <div><div class="flex justify-between text-[10px] font-bold uppercase mb-1 text-blue-400"><span>Hız</span><span id="stat-spd-val">0</span></div><div class="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div id="stat-spd-fill" class="h-full bg-blue-500"></div></div></div>
+                        <div><div class="flex justify-between text-[10px] font-bold uppercase mb-1 text-purple-400"><span>Hızlanma</span><span id="stat-acc-val">0</span></div><div class="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div id="stat-acc-fill" class="h-full bg-purple-500"></div></div></div>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <button id="buy-btn" class="hidden py-6 bg-yellow-500 text-black font-black rounded-2xl hover:bg-yellow-400 transition-all font-orbitron text-xl">SATIN AL</button>
+                    <button id="start-btn" class="py-6 bg-blue-600 text-white font-black rounded-2xl hover:scale-[1.02] active:scale-95 transition-all font-orbitron text-2xl italic">YARIŞA BAŞLA</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <script>
-        // 1. Initialize Locomotive Scroll
-        const scroll = new LocomotiveScroll({
-            el: document.querySelector('[data-scroll-container]'),
-            smooth: true,
-            multiplier: 1,
-            lerp: 0.05
+    <!-- Bitiş -->
+    <div id="game-over" class="absolute inset-0 bg-black/98 flex flex-col items-center justify-center hidden z-[100] backdrop-blur-3xl">
+        <h2 class="text-8xl font-orbitron font-black italic mb-4 text-white uppercase">OYUN <span class="text-red-600">BİTTİ</span></h2>
+        <div id="final-stats-box" class="grid grid-cols-1 md:grid-cols-2 gap-8 my-10 w-full max-w-4xl px-4 text-center"></div>
+        <div class="glass px-12 py-6 rounded-2xl mb-12 border border-yellow-500/40"><span class="text-slate-400 font-bold mr-4">TOPLAM KAZANÇ:</span><span id="final-earned" class="text-4xl font-orbitron font-bold text-yellow-400">+0 C</span></div>
+        <div class="flex gap-6"><button id="retry-btn" class="px-16 py-6 bg-white text-black font-orbitron font-black rounded-2xl uppercase">Tekrar Dene</button><button id="back-to-menu-btn" class="px-16 py-6 bg-slate-800 text-white font-orbitron font-black rounded-2xl uppercase">Garaja Dön</button></div>
+    </div>
+</div>
+
+<script>
+window.onload = function() {
+    // --- CAR DATA ---
+    const CARS = {
+        tofas: { id: 'tofas', name: 'Şahin Drift', price: 0, color: 0xf8fafc, neon: 0x00f2ff, accel: 0.15, max: 20, w: 9, l: 20, desc: "Sokakların efsanesi.", type: 'car' },
+        yamaha: { id: 'yamaha', name: 'R6 Street', price: 5000, color: 0x2563eb, neon: 0x3b82f6, accel: 0.28, max: 32, w: 4, l: 12, desc: "Yüksek devir, saf adrenalin.", type: 'bike' },
+        gtr: { id: 'gtr', name: 'GTR-35 Nismo', price: 25000, color: 0x1e293b, neon: 0xff003c, accel: 0.25, max: 38, w: 11, l: 22, desc: "Japon mühendislik harikası.", type: 'car' },
+        h2r: { id: 'h2r', name: 'Ninja H2R', price: 65000, color: 0x10b981, neon: 0x10b981, accel: 0.40, max: 45, w: 5, l: 14, desc: "Asfaltın en hızlı canavarı.", type: 'bike' },
+        f1: { id: 'f1', name: 'Formula X', price: 250000, color: 0xdc2626, neon: 0xffffff, accel: 0.50, max: 55, w: 12, l: 24, desc: "Pistlerden otobana transfer.", type: 'f1' }
+    };
+
+    const NPC_COLORS = [0xff8800, 0x00ffcc, 0xff00ee, 0xffff00, 0xffffff, 0xff4444, 0x5555ff];
+
+    // --- STATE ---
+    let credits = parseInt(localStorage.getItem('8c_credits_v5')) || 1000;
+    let ownedCars = JSON.parse(localStorage.getItem('8c_owned_v5')) || ['tofas'];
+    let trafficMod = parseFloat(localStorage.getItem('8c_traffic_v5')) || 1.0;
+    let isNight = localStorage.getItem('8c_night_v5') === 'true';
+    
+    let isMultiplayer = false;
+    let p1SelectedId = 'tofas';
+    let p2SelectedId = 'tofas';
+    let gameActive = false, totalScore = 0, keys = {};
+    let players = [], activeEnemies = [], enemyPool = [], roadLines = [], particlePool = [];
+
+    // --- THREE.JS ---
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    document.getElementById('webgl-container').appendChild(renderer.domElement);
+
+    camera.position.set(0, 35, 60);
+    camera.lookAt(0, 0, -50);
+
+    // Aydınlatma kurulumu
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+
+    const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    sunLight.position.set(100, 200, 100);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.set(1024, 1024);
+    scene.add(sunLight);
+
+    function updateTimeStyle() {
+        if (isNight) {
+            scene.background = new THREE.Color(0x020617);
+            scene.fog = new THREE.Fog(0x020617, 100, 450);
+            ambientLight.intensity = 0.15;
+            sunLight.intensity = 0.1;
+            document.getElementById('time-toggle').classList.add('night');
+        } else {
+            scene.background = new THREE.Color(0x3b82f6); // Açık mavi gökyüzü
+            scene.fog = new THREE.Fog(0x3b82f6, 300, 800);
+            ambientLight.intensity = 0.8;
+            sunLight.intensity = 1.2;
+            document.getElementById('time-toggle').classList.remove('night');
+        }
+        // Mevcut oyuncuların ışıklarını güncelle
+        players.forEach(p => {
+            if (p.mesh.userData.spotLight) {
+                p.mesh.userData.spotLight.intensity = isNight ? 2.5 : 0;
+            }
         });
+    }
 
-        // 2. Custom Cursor
-        const cursor = document.querySelector('.cursor');
-        document.addEventListener('mousemove', (e) => {
-            gsap.to(cursor, {
-                x: e.clientX,
-                y: e.clientY,
-                duration: 0.2,
-                ease: "power2.out"
-            });
-        });
+    // Yol
+    const roadGeo = new THREE.PlaneGeometry(120, 1500);
+    const roadMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
+    const road = new THREE.Mesh(roadGeo, roadMat);
+    road.rotation.x = -Math.PI/2;
+    road.position.z = -200;
+    road.receiveShadow = true;
+    scene.add(road);
 
-        // 3. Advanced Mini Game Logic
-        const gameContainer = document.getElementById('game-container');
-        const player = document.getElementById('player');
-        const scoreDisplay = document.getElementById('score-text');
-        const overlay = document.getElementById('game-overlay');
-        
-        let score = 0;
-        let health = 100;
-        let isGameRunning = false;
-        let spawnTimer;
-        const codeSnippets = ["404 ERROR", "MEMORY LEAK", "BUG FOUND", "REFLOW", "NULL PTR", "CORS ERROR"];
+    // Çizgiler
+    const lineGeo = new THREE.PlaneGeometry(1, 10);
+    const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
+    for(let i=1; i<7; i++) {
+        for(let j=0; j<20; j++) {
+            const l = new THREE.Mesh(lineGeo, lineMat);
+            l.rotation.x = -Math.PI/2;
+            l.position.set(-60 + (i * 120/7), 0.1, -j * 40);
+            scene.add(l);
+            roadLines.push(l);
+        }
+    }
 
-        function startGame() {
-            isGameRunning = true;
-            score = 0;
-            health = 100;
-            updateStats();
-            overlay.style.display = 'none';
-            player.style.background = 'var(--accent)';
-            spawnObstacle();
+    function createDetailedCar(type, colorHex, w, l, isPlayer, neonHex) {
+        const group = new THREE.Group();
+        const bodyGeo = new THREE.BoxGeometry(w, 4, l);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: colorHex, metalness: 0.4, roughness: 0.4 });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = 3;
+        body.castShadow = true;
+        group.add(body);
+
+        if (type !== 'bike') {
+            const cab = new THREE.Mesh(new THREE.BoxGeometry(w*0.8, 3, l*0.5), new THREE.MeshStandardMaterial({ color: 0x111111 }));
+            cab.position.set(0, 6.5, -l*0.1);
+            group.add(cab);
         }
 
-        gameContainer.addEventListener('mousemove', (e) => {
-            if(!isGameRunning) return;
-            const rect = gameContainer.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            gsap.to(player, { x, y, duration: 0.1 });
+        const wheelGeo = new THREE.CylinderGeometry(2, 2, 2, 12);
+        const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+        [[ -w/2, 2, l/2-4 ], [ w/2, 2, l/2-4 ], [ -w/2, 2, -l/2+4 ], [ w/2, 2, -l/2+4 ]].forEach(pos => {
+            const wM = new THREE.Mesh(wheelGeo, wheelMat);
+            wM.rotation.z = Math.PI/2;
+            wM.position.set(...pos);
+            group.add(wM);
         });
 
-        function spawnObstacle() {
-            if(!isGameRunning) return;
+        // Fren Lambaları
+        const blL = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 1), new THREE.MeshBasicMaterial({ color: 0x550000 }));
+        blL.position.set(-w/2+2, 4, l/2);
+        group.add(blL);
+        const blR = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 1), new THREE.MeshBasicMaterial({ color: 0x550000 }));
+        blR.position.set(w/2-2, 4, l/2);
+        group.add(blR);
+        group.userData.brakeMats = [blL.material, blR.material];
 
-            const obstacle = document.createElement('div');
-            obstacle.className = 'obstacle';
-            const randomCode = codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
-            obstacle.innerText = `[${randomCode}]`;
+        if (isPlayer) {
+            const sl = new THREE.SpotLight(0xffffff, isNight ? 2.5 : 0, 200, Math.PI/6, 0.5, 1);
+            sl.position.set(0, 5, -l/2);
+            sl.target.position.set(0, 0, -200);
+            group.add(sl);
+            group.add(sl.target);
+            group.userData.spotLight = sl;
+
+            const nL = new THREE.PointLight(neonHex, 2, 30);
+            nL.position.set(0, 1, 0);
+            group.add(nL);
             
-            obstacle.style.left = '100%';
-            obstacle.style.top = Math.random() * 85 + 5 + '%';
-            gameContainer.appendChild(obstacle);
+            const nF = new THREE.Mesh(new THREE.BoxGeometry(w*0.8, 2, 6), new THREE.MeshBasicMaterial({ color: neonHex, transparent: true, opacity: 0 }));
+            nF.position.set(0, 3, l/2+3);
+            group.add(nF);
+            group.userData.nitroMesh = nF;
+        }
+        return group;
+    }
 
-            // Dynamic speed based on score
-            const duration = Math.max(1.5, 4 - (score / 10));
+    function initPools() {
+        enemyPool.forEach(e => scene.remove(e.mesh));
+        enemyPool = []; activeEnemies = [];
+        for(let i=0; i<30; i++) {
+            const mesh = createDetailedCar('car', NPC_COLORS[i%7], 10, 22, false);
+            mesh.visible = false; scene.add(mesh);
+            enemyPool.push({ mesh, active: false, w:10, l:22, speed: 8 + Math.random()*5, lane: 0 });
+        }
+        particlePool.forEach(p => scene.remove(p.mesh));
+        particlePool = [];
+        for(let i=0; i<40; i++) {
+            const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xffaa00 }));
+            mesh.visible = false; scene.add(mesh);
+            particlePool.push({ mesh, active: false, life: 0, vx:0, vy:0, vz:0 });
+        }
+    }
 
-            gsap.to(obstacle, {
-                x: -window.innerWidth - 200,
-                duration: duration,
-                ease: "none",
-                onUpdate: () => {
-                    if(!isGameRunning) return;
-                    const pRect = player.getBoundingClientRect();
-                    const oRect = obstacle.getBoundingClientRect();
-                    
-                    if (pRect.left < oRect.right && pRect.right > oRect.left &&
-                        pRect.top < oRect.bottom && pRect.bottom > oRect.top) {
-                        handleCollision();
-                        obstacle.remove();
-                    }
-                },
-                onComplete: () => {
-                    if(isGameRunning) {
-                        score++;
-                        updateStats();
-                        obstacle.remove();
+    function spawnEnemy() {
+        if(!gameActive) return;
+        const e = enemyPool.find(x => !x.active);
+        if(e) {
+            e.active = true; e.mesh.visible = true;
+            e.lane = Math.floor(Math.random() * 7);
+            e.mesh.position.set(-60 + (e.lane * 120/7) + 120/14, 0, -450);
+            activeEnemies.push(e);
+        }
+        setTimeout(spawnEnemy, 2000 / trafficMod);
+    }
+
+    function animate() {
+        if(!gameActive) { renderer.render(scene, camera); return; }
+        requestAnimationFrame(animate);
+
+        const activePlayers = players.filter(p => !p.dead);
+        if (activePlayers.length === 0) { endGame(); return; }
+        const avgSpeed = activePlayers.reduce((s,p) => s+p.speed, 0) / activePlayers.length;
+
+        roadLines.forEach(l => {
+            l.position.z += avgSpeed * 0.5;
+            if(l.position.z > 50) l.position.z -= 600;
+        });
+
+        players.forEach((p, idx) => {
+            if(p.dead) return;
+            const isAcc = idx === 0 ? keys['KeyW'] : keys['ArrowUp'];
+            const isBrk = idx === 0 ? keys['KeyS'] : keys['ArrowDown'];
+            const isL = idx === 0 ? keys['KeyA'] : keys['ArrowLeft'];
+            const isR = idx === 0 ? keys['KeyD'] : keys['ArrowRight'];
+            const isNos = idx === 0 ? keys['KeyE'] : keys['Numpad0'];
+
+            p.usingNos = isNos && p.nosLevel > 5;
+            if (p.usingNos) { p.speed = Math.min(p.speed + 0.4, p.car.max + 15); p.nosLevel -= 0.8; }
+            else {
+                if (isAcc) p.speed = Math.min(p.speed + p.car.accel, p.car.max);
+                else p.speed = Math.max(p.speed - 0.1, 0);
+                if (isBrk) p.speed = Math.max(p.speed - 0.7, 0);
+                if (p.nosLevel < 100) p.nosLevel += 0.2;
+            }
+
+            p.mesh.userData.brakeMats.forEach(m => m.color.setHex(isBrk ? 0xff0000 : 0x550000));
+            p.mesh.userData.nitroMesh.material.opacity = p.usingNos ? 0.8 : 0;
+
+            const steer = (isL ? -1 : (isR ? 1 : 0)) * 1.5;
+            p.mesh.position.x += steer;
+            p.mesh.position.x = Math.max(-55, Math.min(55, p.mesh.position.x));
+            p.mesh.rotation.y = -steer * 0.1;
+
+            p.mesh.position.z += ((avgSpeed - p.speed) * 3 - p.mesh.position.z) * 0.1;
+            p.score += p.speed / 10;
+
+            document.getElementById(`speed-meter-p${idx+1}`).innerText = Math.floor(p.speed * 10) + " KM/H";
+            document.getElementById(`nos-fill-p${idx+1}`).style.width = p.nosLevel + "%";
+            document.getElementById(`p${idx+1}-live-score`).innerText = Math.floor(p.score).toLocaleString();
+        });
+
+        activeEnemies.forEach((e, i) => {
+            e.mesh.position.z += (avgSpeed - e.speed) * 0.5;
+            players.forEach(p => {
+                if (p.dead) return;
+                if (Math.abs(e.mesh.position.x - p.mesh.position.x) < 10 && Math.abs(e.mesh.position.z - p.mesh.position.z) < 20) {
+                    p.dead = true; p.mesh.visible = false;
+                    for(let k=0; k<15; k++) {
+                        const part = particlePool.find(x => !x.active);
+                        if(part) {
+                            part.active = true; part.mesh.visible = true; part.mesh.position.copy(p.mesh.position);
+                            part.vx = (Math.random()-0.5)*2; part.vy = Math.random()*2; part.vz = (Math.random()-0.5)*2; part.life = 1.0;
+                        }
                     }
                 }
             });
-
-            const nextSpawn = Math.max(300, 1000 - (score * 20));
-            spawnTimer = setTimeout(spawnObstacle, nextSpawn);
-        }
-
-        function handleCollision() {
-            health -= 25;
-            updateStats();
-            gsap.to(player, { background: 'red', duration: 0.1, yoyo: true, repeat: 1 });
-            if(health <= 0) endGame();
-        }
-
-        function updateStats() {
-            scoreDisplay.innerText = `CORE_HEALTH: ${health}% | SCORE: ${score}`;
-        }
-
-        function endGame() {
-            isGameRunning = false;
-            clearTimeout(spawnTimer);
-            // Remove all active obstacles
-            document.querySelectorAll('.obstacle').forEach(o => o.remove());
-            
-            overlay.innerHTML = `
-                <h2 style="font-size: 3rem; color:red; margin-bottom: 20px;">SİSTEM ÇÖKTÜ</h2>
-                <p style="margin-bottom: 30px;">Final Skorun: ${score}</p>
-                <button class="start-btn" onclick="startGame()">Sistemi Yeniden Başlat</button>
-            `;
-            overlay.style.display = 'flex';
-        }
-
-        // 4. WebGL Image Hover Shader
-        class WebGLShader {
-            constructor(container) {
-                this.container = container;
-                this.img = container.querySelector('img');
-                this.scene = new THREE.Scene();
-                this.width = container.offsetWidth;
-                this.height = container.offsetHeight;
-                
-                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-                this.renderer.setSize(this.width, this.height);
-                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-                container.appendChild(this.renderer.domElement);
-                this.renderer.domElement.classList.add('webgl-canvas');
-
-                this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 0.1, 10);
-                this.camera.position.z = 1.2;
-
-                this.loader = new THREE.TextureLoader();
-                this.texture = this.loader.load(this.img.src);
-                
-                this.uniforms = {
-                    uTime: { value: 0 },
-                    uHover: { value: 0 },
-                    uTexture: { value: this.texture }
-                };
-
-                this.initMesh();
-                this.initEvents();
-                this.animate();
-            }
-
-            initMesh() {
-                const geometry = new THREE.PlaneGeometry(2, 2, 16, 16);
-                const material = new THREE.ShaderMaterial({
-                    uniforms: this.uniforms,
-                    vertexShader: `
-                        varying vec2 vUv;
-                        uniform float uTime;
-                        uniform float uHover;
-                        void main() {
-                            vUv = uv;
-                            vec3 pos = position;
-                            pos.z += sin(pos.x * 4.0 + uTime) * 0.05 * uHover;
-                            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-                        }
-                    `,
-                    fragmentShader: `
-                        varying vec2 vUv;
-                        uniform sampler2D uTexture;
-                        uniform float uHover;
-                        uniform float uTime;
-                        void main() {
-                            vec2 uv = vUv;
-                            vec4 color = texture2D(uTexture, uv);
-                            float grey = dot(color.rgb, vec3(0.299, 0.587, 0.114));
-                            gl_FragColor = mix(vec4(vec3(grey), 1.0), color, uHover);
-                        }
-                    `
-                });
-                this.mesh = new THREE.Mesh(geometry, material);
-                this.scene.add(this.mesh);
-            }
-
-            initEvents() {
-                this.container.addEventListener('mouseenter', () => gsap.to(this.uniforms.uHover, { value: 1, duration: 1 }));
-                this.container.addEventListener('mouseleave', () => gsap.to(this.uniforms.uHover, { value: 0, duration: 1 }));
-            }
-
-            animate() {
-                this.uniforms.uTime.value += 0.05;
-                this.renderer.render(this.scene, this.camera);
-                requestAnimationFrame(this.animate.bind(this));
-            }
-        }
-
-        window.addEventListener('load', () => {
-            document.querySelectorAll('.shader-item').forEach(item => new WebGLShader(item));
-            scroll.update();
+            if(e.mesh.position.z > 100) { e.active = false; e.mesh.visible = false; activeEnemies.splice(i, 1); }
         });
-    </script>
+
+        particlePool.forEach(p => {
+            if(p.active) {
+                p.mesh.position.x += p.vx; p.mesh.position.y += p.vy; p.mesh.position.z += p.vz + avgSpeed*0.3;
+                p.vy -= 0.1; p.life -= 0.02; p.mesh.scale.set(p.life, p.life, p.life);
+                if(p.life <= 0) { p.active = false; p.mesh.visible = false; }
+            }
+        });
+
+        document.getElementById('hud-score').innerText = Math.floor(players.reduce((s,p)=>s+p.score,0)).toLocaleString();
+        renderer.render(scene, camera);
+    }
+
+    function initGarage() {
+        const list = document.getElementById('car-list'); list.innerHTML = '';
+        document.getElementById('menu-credits').innerText = credits.toLocaleString();
+        Object.values(CARS).forEach(car => {
+            const card = document.createElement('div');
+            card.className = `car-card glass p-5 rounded-3xl cursor-pointer ${!ownedCars.includes(car.id) ? 'locked' : ''} ${p1SelectedId === car.id ? 'selected-p1' : ''} ${isMultiplayer && p2SelectedId === car.id ? 'selected-p2' : ''}`;
+            card.onclick = () => {
+                if(isMultiplayer) {
+                    if(p1SelectedId !== car.id) p1SelectedId = car.id;
+                    else p2SelectedId = car.id;
+                } else p1SelectedId = car.id;
+                initGarage();
+            };
+            const cssNeon = '#' + car.neon.toString(16).padStart(6, '0');
+            card.innerHTML = `<div class="text-[9px] font-bold text-slate-500 mb-2 uppercase">${car.type}</div><div class="text-lg font-orbitron font-black italic mb-3 text-white">${car.name}</div><div class="flex justify-between items-center"><div class="w-8 h-2 rounded-full" style="background:${cssNeon}"></div><div class="text-[10px] font-bold">${ownedCars.includes(car.id) ? 'SAHİP' : car.price + ' C'}</div></div>`;
+            list.appendChild(card);
+        });
+        const cur = CARS[p1SelectedId];
+        document.getElementById('info-car-name').innerText = cur.name;
+        document.getElementById('info-car-desc').innerText = cur.desc;
+        document.getElementById('stat-spd-fill').style.width = (cur.max / 60) * 100 + '%';
+        document.getElementById('stat-acc-fill').style.width = (cur.accel / 0.6) * 100 + '%';
+        const startBtn = document.getElementById('start-btn');
+        const buyBtn = document.getElementById('buy-btn');
+        if(ownedCars.includes(p1SelectedId)) { startBtn.classList.remove('hidden'); buyBtn.classList.add('hidden'); }
+        else { startBtn.classList.add('hidden'); buyBtn.classList.remove('hidden'); }
+    }
+
+    document.getElementById('time-toggle').onclick = function() {
+        isNight = !isNight;
+        localStorage.setItem('8c_night_v5', isNight);
+        updateTimeStyle();
+    };
+
+    document.getElementById('buy-btn').onclick = () => {
+        const cur = CARS[p1SelectedId];
+        if(credits >= cur.price) { credits -= cur.price; ownedCars.push(cur.id); localStorage.setItem('8c_credits_v5', credits); localStorage.setItem('8c_owned_v5', JSON.stringify(ownedCars)); initGarage(); }
+    };
+
+    function startGame() {
+        document.getElementById('menu-screen').style.display = 'none';
+        document.getElementById('game-over').classList.add('hidden');
+        document.getElementById('game-hud').classList.remove('hidden');
+        players.forEach(p => scene.remove(p.mesh));
+        initPools();
+        
+        const m1 = createDetailedCar(CARS[p1SelectedId].type, CARS[p1SelectedId].color, CARS[p1SelectedId].w, CARS[p1SelectedId].l, true, CARS[p1SelectedId].neon);
+        m1.position.set(isMultiplayer ? -20 : 0, 0, 0); scene.add(m1);
+        players = [{ car: CARS[p1SelectedId], mesh: m1, speed: 0, nosLevel: 100, score: 0, dead: false }];
+
+        if(isMultiplayer) {
+            const m2 = createDetailedCar(CARS[p2SelectedId].type, CARS[p2SelectedId].color, CARS[p2SelectedId].w, CARS[p2SelectedId].l, true, CARS[p2SelectedId].neon);
+            m2.position.set(20, 0, 0); scene.add(m2);
+            players.push({ car: CARS[p2SelectedId], mesh: m2, speed: 0, nosLevel: 100, score: 0, dead: false });
+            document.getElementById('p2-hud-box').classList.remove('hidden');
+        } else document.getElementById('p2-hud-box').classList.add('hidden');
+
+        gameActive = true; keys = {};
+        updateTimeStyle();
+        spawnEnemy(); animate();
+    }
+
+    function endGame() {
+        gameActive = false;
+        const earned = Math.floor(players.reduce((s,p)=>s+p.score,0) / 10);
+        credits += earned; localStorage.setItem('8c_credits_v5', credits);
+        document.getElementById('game-over').classList.remove('hidden');
+        const statsBox = document.getElementById('final-stats-box');
+        statsBox.innerHTML = players.map((p,i) => `<div class="glass p-10 rounded-3xl border border-white/10"><div class="text-xs uppercase font-bold text-blue-400 mb-2">${i+1}. Oyuncu</div><div class="text-5xl font-orbitron font-bold">${Math.floor(p.score).toLocaleString()}</div></div>`).join('');
+        document.getElementById('final-earned').innerText = "+" + earned.toLocaleString() + " C";
+    }
+
+    document.getElementById('mode-single').onclick = () => { isMultiplayer = false; initGarage(); };
+    document.getElementById('mode-multi').onclick = () => { isMultiplayer = true; initGarage(); };
+    document.getElementById('open-settings').onclick = () => document.getElementById('settings-modal').classList.remove('hidden');
+    document.getElementById('close-settings').onclick = () => document.getElementById('settings-modal').classList.add('hidden');
+    document.getElementById('start-btn').onclick = startGame;
+    document.getElementById('retry-btn').onclick = startGame;
+    document.getElementById('back-to-menu-btn').onclick = () => { document.getElementById('game-over').classList.add('hidden'); document.getElementById('menu-screen').style.display = 'flex'; renderer.render(scene, camera); initGarage(); };
+    
+    window.addEventListener('keydown', e => keys[e.code] = true);
+    window.addEventListener('keyup', e => keys[e.code] = false);
+    
+    updateTimeStyle();
+    initGarage();
+};
+</script>
 </body>
 </html>
