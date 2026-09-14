@@ -1,426 +1,588 @@
 <!DOCTYPE html>
-<html lang="tr" class="scroll-smooth">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>eypensare portfolio</title>
-    <meta name="description" content="Bilişim Teknolojileri Öğrencisi & Açık Kaynak Geliştirici. Peace, love, Linux.">
-    
-    <!-- Google Fonts: Outfit (Modern Sans) & JetBrains Mono (Developer Font) -->
+    <title>Eyüp Ensar Erkul — Open Source & IT Student</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Tailwind CSS (CDN for Single File Convenience) -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    },
                     colors: {
-                        brand: {
-                            black: '#050505',
-                            dark: '#0a0a0a',
-                            green: '#00ff66',
-                            greenDark: '#00cc52',
+                        surface: {
+                            base: '#0B0C0E',
+                            card: '#14161A',
+                            border: 'rgba(255, 255, 255, 0.08)',
+                            hover: 'rgba(255, 255, 255, 0.14)'
+                        },
+                        accent: {
+                            white: '#FFFFFF',
+                            muted: '#9CA3AF',
+                            dim: '#4B5563'
                         }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
                     }
                 }
             }
         }
     </script>
-
     <style>
-        /* Base Styling & Scrollbar */
+        /* Smooth, ultra-subtle dark theme background */
         body {
-            background-color: #050505;
-            color: #ffffff;
-            overflow-x: hidden;
+            background-color: #0B0C0E;
+            color: #E5E7EB;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -0.01em;
         }
         
-        ::selection {
-            background-color: rgba(0, 255, 102, 0.3);
-            color: #00ff66;
+        /* Subtle Gradient Grid Pattern */
+        .dot-grid-bg {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+            background-size: 24px 24px;
         }
 
+        /* Glassmorphism Panel */
+        .glass-panel {
+            background: rgba(20, 22, 26, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(255, 255, 255, 0.16);
+        }
+
+        /* Terminal Cursor Blink */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        .cursor-blink {
+            animation: blink 1.2s infinite;
+        }
+
+        /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #050505;
+            background: #0B0C0E;
         }
         ::-webkit-scrollbar-thumb {
-            background: #1a1a1a;
-            border-radius: 10px;
+            background: #272A30;
+            border-radius: 3px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #00ff66;
+            background: #4B5563;
         }
-
-        /* Background Effects */
-        .bg-glow {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(120px);
-            z-index: -1;
-            opacity: 0.15;
-            animation: pulse-glow 8s infinite alternate ease-in-out;
-        }
-        .glow-1 {
-            top: -10%; left: -10%;
-            width: 50vw; height: 50vw;
-            background: radial-gradient(circle, #00ff66 0%, transparent 70%);
-        }
-        .glow-2 {
-            bottom: -20%; right: -10%;
-            width: 60vw; height: 60vw;
-            background: radial-gradient(circle, #00ff66 0%, transparent 70%);
-            animation-delay: -4s;
-        }
-
-        /* Glassmorphism Classes */
-        .glass {
-            background: rgba(15, 15, 15, 0.4);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .glass-card {
-            background: linear-gradient(145deg, rgba(20, 20, 20, 0.6) 0%, rgba(10, 10, 10, 0.3) 100%);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(0, 255, 102, 0.05);
-            border-top: 1px solid rgba(0, 255, 102, 0.15);
-            border-radius: 1rem;
-            transition: all 0.3s ease;
-        }
-        
-        .glass-card:hover {
-            border-color: rgba(0, 255, 102, 0.4);
-            box-shadow: 0 10px 40px -10px rgba(0, 255, 102, 0.15);
-            transform: translateY(-5px);
-        }
-
-        /* Text Gradients & Utilities */
-        .text-gradient {
-            background: linear-gradient(to right, #ffffff, #888888);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .text-green-gradient {
-            background: linear-gradient(to right, #00ff66, #00b347);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* Animations */
-        @keyframes pulse-glow {
-            0% { transform: scale(1); opacity: 0.1; }
-            100% { transform: scale(1.2); opacity: 0.2; }
-        }
-
-        /* Scroll Reveal Utility */
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
-        }
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .terminal-text::after {
-            content: '_';
-            animation: blink 1s step-end infinite;
-        }
-        @keyframes blink { 50% { opacity: 0; } }
     </style>
 </head>
-<body class="antialiased selection:bg-brand-green selection:bg-opacity-20 selection:text-brand-green">
+<body class="dot-grid-bg min-h-screen flex flex-col justify-between selection:bg-white selection:text-black">
 
-    <div class="bg-glow glow-1"></div>
-    <div class="bg-glow glow-2"></div>
-
-    <nav class="fixed w-full z-50 glass top-0">
-        <div class="max-w-6xl mx-auto px-6 lg:px-8 py-4 flex justify-between items-center">
-            <a href="#" class="text-xl font-bold font-mono tracking-tighter text-white hover:text-brand-green transition-colors">
-                <span class="text-brand-green">~/</span>erkul<span class="animate-pulse">_</span>
+    <nav class="sticky top-0 z-50 glass-panel border-b border-white/10 px-4 py-3 sm:px-8">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <a href="#" class="font-mono font-semibold text-sm text-white flex items-center gap-2 tracking-tight">
+                <span class="w-2.5 h-2.5 rounded-full bg-white inline-block"></span> eypensare
             </a>
-            <div class="hidden md:flex space-x-8 text-sm font-mono text-gray-400">
-                <a href="#about" class="hover:text-brand-green transition-colors hover:-translate-y-0.5 transform block">Hakkımda</a>
-                <a href="#projects" class="hover:text-brand-green transition-colors hover:-translate-y-0.5 transform block">Projeler</a>
-                <a href="#contact" class="hover:text-brand-green transition-colors hover:-translate-y-0.5 transform block">İletişim</a>
+            
+            <div class="hidden md:flex items-center space-x-6 font-mono text-xs text-gray-400">
+                <a href="#about" class="hover:text-white transition-colors">/about</a>
+                <a href="#projects" class="hover:text-white transition-colors">/projects</a>
+                <a href="#cli" class="hover:text-white transition-colors">/terminal</a>
+                <a href="#contact" class="hover:text-white transition-colors">/contact</a>
             </div>
-            <!-- Mobile Menu Button -->
-            <button class="md:hidden text-gray-300 hover:text-brand-green" id="mobile-menu-btn">
-                <i class="fa-solid fa-bars text-xl"></i>
-            </button>
-        </div>
-        <!-- Mobile Menu (Hidden by default) -->
-        <div id="mobile-menu" class="hidden md:hidden glass border-t border-gray-800 absolute w-full left-0">
-            <div class="flex flex-col px-6 py-4 space-y-4 font-mono text-sm">
-                <a href="#about" class="text-gray-300 hover:text-brand-green mobile-link">Hakkımda</a>
-                <a href="#projects" class="text-gray-300 hover:text-brand-green mobile-link">Projeler</a>
-                <a href="#contact" class="text-gray-300 hover:text-brand-green mobile-link">İletişim</a>
+
+            <div class="flex items-center gap-3 font-mono text-xs">
+                <a href="https://github.com/eypensare" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 transition-all flex items-center gap-2">
+                    <i class="fa-brands fa-github text-sm"></i> <span class="hidden sm:inline">GitHub</span>
+                </a>
+                <a href="https://instagram.com/eypensare" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 transition-all flex items-center gap-2">
+                    <i class="fa-brands fa-instagram text-sm"></i> <span class="hidden sm:inline">Instagram</span>
+                </a>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-6xl mx-auto px-6 lg:px-8">
-        
-        <section class="min-h-screen flex flex-col justify-center pt-20 pb-10">
-            <div class="reveal">
-                <p class="font-mono text-brand-green mb-4 flex items-center gap-2 text-sm md:text-base">
-                    <i class="fa-solid fa-terminal"></i> Merhaba dünya, ben
+    <header id="about" class="max-w-5xl mx-auto px-4 sm:px-8 pt-16 pb-12 w-full">
+        <div class="grid md:grid-cols-12 gap-10 items-center">
+            
+            <div class="md:col-span-7 space-y-6">
+                <!-- Minimal Status Pill -->
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-gray-300 text-xs font-mono">
+                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                    <span>IT Student @ YTÜ Maçka MTAL</span>
+                </div>
+
+                <!-- Main Name & Dynamic Subtitle -->
+                <div class="space-y-2">
+                    <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-white font-sans">
+                        Eyüp Ensar Erkul
+                    </h1>
+                    <div class="font-mono text-base text-gray-400 flex items-center gap-2 pt-1">
+                        <span class="text-white">&gt;</span>
+                        <span id="typed-text"></span><span class="text-white cursor-blink">_</span>
+                    </div>
+                </div>
+
+                <!-- Motto Card -->
+                <div class="p-4 rounded-lg bg-surface-card border border-white/10 glass-panel max-w-md flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-md bg-white/5 flex items-center justify-center text-white border border-white/10">
+                        <i class="fa-brands fa-linux text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="text-[11px] font-mono text-gray-400 uppercase tracking-wider">System Philosophy</div>
+                        <div class="font-mono text-sm text-white font-semibold">"Peace, Love, Linux."</div>
+                    </div>
+                </div>
+
+                <!-- Bio Text -->
+                <p class="text-gray-400 leading-relaxed text-sm max-w-xl">
+                    Focused on Linux systems, open-source development, and backend architecture. Crafting clean software solutions and building modern digital infrastructure.
                 </p>
-                <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-4 text-gradient">
-                    Eyüp Ensar Erkul.
-                </h1>
-                <h2 class="text-3xl md:text-5xl font-bold text-gray-400 mb-6">
-                    Bilişim Teknolojileri Öğrencisi <br class="hidden md:block"> & Açık Kaynak Geliştirici.
+
+                <!-- Action CTA Buttons -->
+                <div class="flex flex-wrap gap-3 pt-2 font-mono text-xs">
+                    <a href="#projects" class="px-5 py-2.5 rounded-md bg-white text-black font-semibold hover:bg-gray-200 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-code text-xs"></i> View Projects
+                    </a>
+                    <a href="#cli" class="px-5 py-2.5 rounded-md bg-surface-card border border-white/10 text-gray-300 hover:bg-white/10 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-terminal text-xs"></i> Launch CLI
+                    </a>
+                </div>
+            </div>
+
+            <!-- Neofetch System Info Mockup -->
+            <div class="md:col-span-5 w-full">
+                <div class="glass-panel rounded-lg border border-white/10 font-mono text-xs shadow-xl overflow-hidden">
+                    <div class="bg-black/60 px-4 py-2 flex items-center justify-between border-b border-white/10">
+                        <div class="flex items-center space-x-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-white/20 inline-block"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-white/20 inline-block"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-white/20 inline-block"></span>
+                        </div>
+                        <span class="text-gray-400 text-[11px]">ensar@cachyos:~</span>
+                    </div>
+                    <div class="p-4 space-y-2 text-gray-300 bg-black/30">
+                        <div class="flex items-center gap-3 font-semibold pb-2 border-b border-white/10">
+                            <i class="fa-brands fa-linux text-xl text-white"></i>
+                            <div>
+                                <div class="text-white">eypensare@system</div>
+                                <div class="text-[10px] text-gray-400">------------------</div>
+                            </div>
+                        </div>
+                        <div class="space-y-1.5 pt-1 text-gray-400">
+                            <div><span class="text-white font-medium">OS:</span> CachyOS / Arch Linux x86_64</div>
+                            <div><span class="text-white font-medium">Host:</span> YTÜ Maçka MTAL Workstation</div>
+                            <div><span class="text-white font-medium">WM:</span> Hyprland / Sway</div>
+                            <div><span class="text-white font-medium">Shell:</span> fish 3.7.0</div>
+                            <div><span class="text-white font-medium">Focus:</span> Open Source & Systems</div>
+                            <div><span class="text-white font-medium">Location:</span> Istanbul, TR</div>
+                        </div>
+                        <div class="pt-3 flex gap-1 justify-between opacity-40">
+                            <span class="h-1.5 w-full bg-white"></span>
+                            <span class="h-1.5 w-full bg-gray-400"></span>
+                            <span class="h-1.5 w-full bg-gray-600"></span>
+                            <span class="h-1.5 w-full bg-gray-800"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <section class="max-w-5xl mx-auto px-4 sm:px-8 py-10 w-full">
+        <div class="flex items-center gap-3 mb-6">
+            <h2 class="font-mono text-xs font-semibold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                <span class="text-white">//</span> Tech Stack & Tools
+            </h2>
+            <div class="h-px bg-white/10 flex-grow"></div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 font-mono text-xs">
+            
+            <div class="p-3.5 rounded-md bg-surface-card border border-white/10 hover:border-white/25 transition-all flex items-center gap-3 group">
+                <i class="fa-brands fa-linux text-lg text-gray-300 group-hover:text-white transition-colors"></i>
+                <div>
+                    <div class="text-white font-medium">Linux & Arch</div>
+                    <div class="text-[11px] text-gray-400">System Admin</div>
+                </div>
+            </div>
+
+            <div class="p-3.5 rounded-md bg-surface-card border border-white/10 hover:border-white/25 transition-all flex items-center gap-3 group">
+                <i class="fa-brands fa-git-alt text-lg text-gray-300 group-hover:text-white transition-colors"></i>
+                <div>
+                    <div class="text-white font-medium">Git & GitHub</div>
+                    <div class="text-[11px] text-gray-400">Open Source</div>
+                </div>
+            </div>
+
+            <div class="p-3.5 rounded-md bg-surface-card border border-white/10 hover:border-white/25 transition-all flex items-center gap-3 group">
+                <i class="fa-brands fa-js text-lg text-gray-300 group-hover:text-white transition-colors"></i>
+                <div>
+                    <div class="text-white font-medium">JavaScript</div>
+                    <div class="text-[11px] text-gray-400">Modern Web</div>
+                </div>
+            </div>
+
+            <div class="p-3.5 rounded-md bg-surface-card border border-white/10 hover:border-white/25 transition-all flex items-center gap-3 group">
+                <i class="fa-solid fa-cloud text-lg text-gray-300 group-hover:text-white transition-colors"></i>
+                <div>
+                    <div class="text-white font-medium">Appwrite & Cloud</div>
+                    <div class="text-[11px] text-gray-400">Backend Services</div>
+                </div>
+            </div>
+
+            <div class="p-3.5 rounded-md bg-surface-card border border-white/10 hover:border-white/25 transition-all flex items-center gap-3 group">
+                <i class="fa-solid fa-terminal text-lg text-gray-300 group-hover:text-white transition-colors"></i>
+                <div>
+                    <div class="text-white font-medium">Fish & Bash</div>
+                    <div class="text-[11px] text-gray-400">Shell Scripting</div>
+                </div>
+            </div>
+
+            <div class="p-3.5 rounded-md bg-surface-card border border-white/10 hover:border-white/25 transition-all flex items-center gap-3 group">
+                <i class="fa-brands fa-python text-lg text-gray-300 group-hover:text-white transition-colors"></i>
+                <div>
+                    <div class="text-white font-medium">Python & C++</div>
+                    <div class="text-[11px] text-gray-400">Core Programming</div>
+                </div>
+            </div>
+
+            <div class="p-3.5 rounded-md bg-surface-card border border-white/10 hover:border-white/25 transition-all flex items-center gap-3 group">
+                <i class="fa-solid fa-layer-group text-lg text-gray-300 group-hover:text-white transition-colors"></i>
+                <div>
+                    <div class="text-white font-medium">Hyprland</div>
+                    <div class="text-[11px] text-gray-400">Tiling Compositor</div>
+                </div>
+            </div>
+
+            <div class="p-3.5 rounded-md bg-surface-card border border-white/10 hover:border-white/25 transition-all flex items-center gap-3 group">
+                <i class="fa-solid fa-globe text-lg text-gray-300 group-hover:text-white transition-colors"></i>
+                <div>
+                    <div class="text-white font-medium">Cloudflare</div>
+                    <div class="text-[11px] text-gray-400">Pages & CDN</div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="projects" class="max-w-5xl mx-auto px-4 sm:px-8 py-10 w-full">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3 w-full">
+                <h2 class="font-mono text-xs font-semibold text-gray-400 uppercase tracking-widest flex items-center gap-2 whitespace-nowrap">
+                    <span class="text-white">//</span> Featured Projects
                 </h2>
-                
-                <p class="max-w-2xl text-gray-400 text-lg md:text-xl leading-relaxed mb-10">
-                    Açık kaynak felsefesiyle kodluyor, modern teknolojilerle üretmeyi seviyorum. 
-                    Karmaşıklığı basitliğe indirgeyen sistemler inşa etmeye odaklanıyorum.
-                    <br><br>
-                    <span class="font-mono text-brand-green bg-brand-green bg-opacity-10 px-2 py-1 rounded inline-block">
-                        "peace, love, Linux."
-                    </span>
-                </p>
-                
-                <div class="flex flex-wrap gap-4 font-mono text-sm">
-                    <a href="#projects" class="glass px-6 py-3 rounded-md text-brand-green border-brand-green/30 hover:bg-brand-green hover:bg-opacity-10 transition-all flex items-center gap-2">
-                        <i class="fa-brands fa-github"></i> Projelerimi Gör
-                    </a>
-                    <a href="#contact" class="px-6 py-3 rounded-md text-gray-300 hover:text-white transition-all flex items-center gap-2">
-                        İletişime Geç <i class="fa-solid fa-arrow-right"></i>
-                    </a>
-                </div>
+                <div class="h-px bg-white/10 flex-grow"></div>
             </div>
-        </section>
+        </div>
 
-        <section id="about" class="py-24">
-            <div class="reveal flex items-center gap-4 mb-12">
-                <h3 class="text-2xl md:text-3xl font-bold font-mono text-white">
-                    <span class="text-brand-green">01.</span> Hakkımda & Yetenekler
-                </h3>
-                <div class="h-px bg-gray-800 flex-grow max-w-xs"></div>
-            </div>
+        <div class="grid md:grid-cols-3 gap-5">
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Skill Card 1 -->
-                <div class="glass-card p-6 reveal">
-                    <div class="w-12 h-12 rounded-lg bg-brand-green bg-opacity-10 flex items-center justify-center text-brand-green text-2xl mb-4">
-                        <i class="fa-brands fa-linux"></i>
+            <!-- Project Card 1 -->
+            <div class="glass-panel rounded-lg p-5 border border-white/10 flex flex-col justify-between group">
+                <div>
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="p-2.5 bg-white/5 rounded-md text-white border border-white/10">
+                            <i class="fa-solid fa-stopwatch text-base"></i>
+                        </div>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-white/10">Open Source</span>
                     </div>
-                    <h4 class="text-xl font-bold mb-2">Linux & Arch</h4>
-                    <p class="text-gray-400 text-sm leading-relaxed">
-                        Sistemin her hücresine hakim olma tutkusu. Arch Linux'un sunduğu özgürlük ve terminalin gücüyle çalışmayı seviyorum.
+                    <h3 class="font-mono text-base font-semibold text-white group-hover:text-gray-200 transition-colors mb-2">NyxLabs | Focus</h3>
+                    <p class="text-gray-400 text-xs leading-relaxed mb-4">
+                        Customizable Pomodoro & task management web application built for focused developer workflows and session tracking.
                     </p>
                 </div>
-                
-                <!-- Skill Card 2 -->
-                <div class="glass-card p-6 reveal" style="transition-delay: 100ms;">
-                    <div class="w-12 h-12 rounded-lg bg-brand-green bg-opacity-10 flex items-center justify-center text-brand-green text-2xl mb-4">
-                        <i class="fa-brands fa-osi"></i>
+                <div>
+                    <div class="flex flex-wrap gap-1.5 mb-4 font-mono text-[10px]">
+                        <span class="px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-white/5">JavaScript</span>
+                        <span class="px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-white/5">PWA</span>
                     </div>
-                    <h4 class="text-xl font-bold mb-2">Açık Kaynak</h4>
-                    <p class="text-gray-400 text-sm leading-relaxed">
-                        Bilgiyi paylaşmanın ve toplulukla büyümenin gücüne inanıyorum. Open-source projelere katkı sağlamak en büyük motivasyonum.
-                    </p>
-                </div>
-
-                <!-- Skill Card 3 -->
-                <div class="glass-card p-6 reveal" style="transition-delay: 200ms;">
-                    <div class="w-12 h-12 rounded-lg bg-brand-green bg-opacity-10 flex items-center justify-center text-brand-green text-2xl mb-4">
-                        <i class="fa-solid fa-code"></i>
+                    <div class="flex items-center gap-3 pt-3 border-t border-white/5 font-mono text-xs">
+                        <a href="https://github.com/eypensare" target="_blank" class="text-white hover:underline flex items-center gap-1.5">
+                            <i class="fa-brands fa-github"></i> Repository
+                        </a>
                     </div>
-                    <h4 class="text-xl font-bold mb-2">Geliştirme</h4>
-                    <p class="text-gray-400 text-sm leading-relaxed">
-                        Modern diller ve araçlarla performanslı çözümler üretmek. Minimalist kod yapısı ve temiz mimariler.
-                    </p>
                 </div>
             </div>
-        </section>
 
-        <section id="projects" class="py-24">
-            <div class="reveal flex items-center gap-4 mb-12">
-                <h3 class="text-2xl md:text-3xl font-bold font-mono text-white">
-                    <span class="text-brand-green">02.</span> Açık Kaynak Projeler
-                </h3>
-                <div class="h-px bg-gray-800 flex-grow max-w-xs"></div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Project 1 -->
-                <div class="glass-card p-8 group reveal relative overflow-hidden">
-                    <!-- Deco element -->
-                    <div class="absolute -right-10 -top-10 text-9xl text-gray-800 opacity-20 transform group-hover:rotate-12 transition-transform duration-500">
-                        <i class="fa-solid fa-folder-open"></i>
-                    </div>
-                    
-                    <div class="flex justify-between items-start mb-6 relative z-10">
-                        <div class="text-4xl text-brand-green">
-                            <i class="fa-brands fa-github"></i>
+            <!-- Project Card 2 -->
+            <div class="glass-panel rounded-lg p-5 border border-white/10 flex flex-col justify-between group">
+                <div>
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="p-2.5 bg-white/5 rounded-md text-white border border-white/10">
+                            <i class="fa-solid fa-image text-base"></i>
                         </div>
-                        <div class="flex gap-4">
-                            <a href="#" class="text-gray-400 hover:text-brand-green transition-colors" title="GitHub Repo"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-                        </div>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-white/10">Client-Side</span>
                     </div>
-                    
-                    <h4 class="text-2xl font-bold mb-3 group-hover:text-brand-green transition-colors relative z-10">Dotfiles & Sistem Yapılandırmaları</h4>
-                    <p class="text-gray-400 text-sm mb-6 relative z-10 leading-relaxed">
-                        Arch Linux için kişisel pencere yöneticisi (TWM), terminal emülatörü ve neovim yapılandırmalarımı barındıran repo. Tamamen verimlilik odaklı.
+                    <h3 class="font-mono text-base font-semibold text-white group-hover:text-gray-200 transition-colors mb-2">Nyx Converter</h3>
+                    <p class="text-gray-400 text-xs leading-relaxed mb-4">
+                        Fast, privacy-focused offline image converter tool. Runs completely on client-side canvas APIs without server uploads.
                     </p>
-                    
-                    <ul class="flex flex-wrap gap-3 font-mono text-xs text-brand-green relative z-10">
-                        <li>Bash</li>
-                        <li>Lua</li>
-                        <li>Hyprland</li>
-                    </ul>
                 </div>
-
-                <!-- Project 2 -->
-                <div class="glass-card p-8 group reveal relative overflow-hidden" style="transition-delay: 100ms;">
-                    <div class="absolute -right-10 -top-10 text-9xl text-gray-800 opacity-20 transform group-hover:rotate-12 transition-transform duration-500">
-                        <i class="fa-solid fa-terminal"></i>
+                <div>
+                    <div class="flex flex-wrap gap-1.5 mb-4 font-mono text-[10px]">
+                        <span class="px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-white/5">Canvas API</span>
+                        <span class="px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-white/5">Offline First</span>
                     </div>
-                    
-                    <div class="flex justify-between items-start mb-6 relative z-10">
-                        <div class="text-4xl text-brand-green">
-                            <i class="fa-brands fa-github"></i>
-                        </div>
-                        <div class="flex gap-4">
-                            <a href="#" class="text-gray-400 hover:text-brand-green transition-colors" title="GitHub Repo"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-                        </div>
+                    <div class="flex items-center gap-3 pt-3 border-t border-white/5 font-mono text-xs">
+                        <a href="https://github.com/eypensare" target="_blank" class="text-white hover:underline flex items-center gap-1.5">
+                            <i class="fa-brands fa-github"></i> Repository
+                        </a>
                     </div>
-                    
-                    <h4 class="text-2xl font-bold mb-3 group-hover:text-brand-green transition-colors relative z-10">CLI Araç Kutusu</h4>
-                    <p class="text-gray-400 text-sm mb-6 relative z-10 leading-relaxed">
-                        Günlük terminal işlemlerini hızlandırmak için geliştirdiğim açık kaynak komut satırı araçları.
-                    </p>
-                    
-                    <ul class="flex flex-wrap gap-3 font-mono text-xs text-brand-green relative z-10">
-                        <li>Python</li>
-                        <li>Shell Scripting</li>
-                    </ul>
                 </div>
             </div>
-            
-            <div class="text-center mt-12 reveal">
-                <a href="#" class="inline-block font-mono text-sm text-brand-green hover:underline decoration-brand-green underline-offset-4 transition-all">
-                    Tüm projelerimi GitHub'da incele <i class="fa-solid fa-arrow-right ml-1"></i>
-                </a>
-            </div>
-        </section>
 
-        <section id="contact" class="py-32 text-center max-w-2xl mx-auto">
-            <div class="reveal">
-                <p class="font-mono text-brand-green text-sm mb-4">03. Sıradaki Adım?</p>
-                <h3 class="text-4xl md:text-5xl font-bold text-white mb-6">İletişimde Kalalım</h3>
-                <p class="text-gray-400 text-sm md:text-base leading-relaxed mb-10">
-                    Açık kaynak projeler, linux muhabbeti, teknoloji hakkında konuşmak veya sadece merhaba demek isterseniz sosyal medya veya e-posta üzerinden bana ulaşabilirsiniz.
+            <!-- Project Card 3 -->
+            <div class="glass-panel rounded-lg p-5 border border-white/10 flex flex-col justify-between group">
+                <div>
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="p-2.5 bg-white/5 rounded-md text-white border border-white/10">
+                            <i class="fa-solid fa-hand-holding-heart text-base"></i>
+                        </div>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-white/10">Fullstack</span>
+                    </div>
+                    <h3 class="font-mono text-base font-semibold text-white group-hover:text-gray-200 transition-colors mb-2">İyilik Köprüsü</h3>
+                    <p class="text-gray-400 text-xs leading-relaxed mb-4">
+                        Social solidarity platform built with Appwrite backend database services and reactive frontend design.
+                    </p>
+                </div>
+                <div>
+                    <div class="flex flex-wrap gap-1.5 mb-4 font-mono text-[10px]">
+                        <span class="px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-white/5">Appwrite</span>
+                        <span class="px-2 py-0.5 rounded bg-white/5 text-gray-300 border border-white/5">JavaScript</span>
+                    </div>
+                    <div class="flex items-center gap-3 pt-3 border-t border-white/5 font-mono text-xs">
+                        <a href="https://github.com/eypensare" target="_blank" class="text-white hover:underline flex items-center gap-1.5">
+                            <i class="fa-brands fa-github"></i> Repository
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="cli" class="max-w-5xl mx-auto px-4 sm:px-8 py-10 w-full">
+        <div class="flex items-center gap-3 mb-6">
+            <h2 class="font-mono text-xs font-semibold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                <span class="text-white">//</span> Interactive CLI Shell
+            </h2>
+            <div class="h-px bg-white/10 flex-grow"></div>
+        </div>
+
+        <div class="glass-panel rounded-lg border border-white/10 font-mono text-xs overflow-hidden shadow-2xl">
+            <!-- Terminal Header -->
+            <div class="bg-black/80 px-4 py-2.5 flex items-center justify-between border-b border-white/10">
+                <div class="flex items-center space-x-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-white/20 inline-block"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-white/20 inline-block"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-white/20 inline-block"></span>
+                </div>
+                <div class="text-[11px] text-gray-400 flex items-center gap-2">
+                    <i class="fa-solid fa-terminal text-white"></i> bash — eypensare@github.io
+                </div>
+                <div class="text-[11px] text-gray-400">v2.4</div>
+            </div>
+
+            <!-- Terminal Window Output -->
+            <div id="terminal-body" class="p-4 sm:p-5 bg-black/40 text-gray-300 h-72 overflow-y-auto space-y-2 font-mono text-xs">
+                <div>
+                    <span class="text-white font-medium">Eyüp Ensar's Terminal Shell v2.4</span><br>
+                    <span class="text-gray-400">Type <span class="text-white font-semibold">'help'</span> to view available commands.</span>
+                </div>
+            </div>
+
+            <!-- CLI Input Bar -->
+            <div class="bg-black/60 px-4 py-3 border-t border-white/10 flex items-center gap-2">
+                <span class="text-white font-semibold">ensar@eypensare:~$</span>
+                <input type="text" id="cli-input" class="bg-transparent text-white focus:outline-none w-full font-mono text-xs caret-white" placeholder="type command here..." autocomplete="off" spellcheck="false">
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact" class="glass-panel border-t border-white/10 py-8 px-4 sm:px-8 mt-12">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
+            <div>
+                <div class="font-mono text-sm font-semibold text-white flex items-center justify-center md:justify-start gap-2">
+                    <i class="fa-brands fa-linux text-white text-base"></i> Eyüp Ensar Erkul
+                </div>
+                <p class="text-xs text-gray-400 font-mono mt-0.5">
+                    YTÜ Maçka MTAL • Bilişim Teknolojileri
                 </p>
-                
-                <div class="flex justify-center gap-6 mb-12">
-                    <a href="https://github.com" target="_blank" class="w-14 h-14 rounded-full glass flex items-center justify-center text-xl text-gray-300 hover:text-brand-green hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-brand-green/30">
-                        <i class="fa-brands fa-github"></i>
-                    </a>
-                    <a href="https://instagram.com" target="_blank" class="w-14 h-14 rounded-full glass flex items-center justify-center text-xl text-gray-300 hover:text-brand-green hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-brand-green/30">
-                        <i class="fa-brands fa-instagram"></i>
-                    </a>
-                    <a href="mailto:ornek@mail.com" class="w-14 h-14 rounded-full glass flex items-center justify-center text-xl text-gray-300 hover:text-brand-green hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-brand-green/30">
-                        <i class="fa-solid fa-envelope"></i>
-                    </a>
-                </div>
-                
-                <a href="mailto:ornek@mail.com" class="font-mono text-brand-green border border-brand-green px-8 py-4 rounded hover:bg-brand-green hover:bg-opacity-10 transition-colors">
-                    E-posta Gönder
-                </a>
             </div>
-        </section>
 
-    </main>
+            <!-- Contact Links -->
+            <div class="flex flex-wrap justify-center items-center gap-3 font-mono text-xs">
+                <a href="https://github.com/eypensare" target="_blank" class="px-3.5 py-1.5 rounded-md bg-surface-card border border-white/10 text-gray-300 hover:text-white hover:border-white/25 transition-all flex items-center gap-2">
+                    <i class="fa-brands fa-github text-sm"></i> github.com/eypensare
+                </a>
+                <a href="https://instagram.com/eypensare" target="_blank" class="px-3.5 py-1.5 rounded-md bg-surface-card border border-white/10 text-gray-300 hover:text-white hover:border-white/25 transition-all flex items-center gap-2">
+                    <i class="fa-brands fa-instagram text-sm"></i> @eypensare
+                </a>
+                <button onclick="copyPageLink()" class="px-3.5 py-1.5 rounded-md bg-white/10 border border-white/20 text-white hover:bg-white/15 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-copy text-xs"></i> <span id="copy-btn-text">Copy Link</span>
+                </button>
+            </div>
+        </div>
 
-    <footer class="py-8 text-center border-t border-gray-900 mt-10">
-        <div class="font-mono text-xs text-gray-500 flex flex-col items-center gap-2">
-            <p>Designed & Built by Eyüp Ensar Erkul</p>
-            <p class="flex items-center gap-2">
-                <i class="fa-solid fa-code"></i> with <i class="fa-solid fa-heart text-brand-green"></i> and <i class="fa-brands fa-linux"></i>
-            </p>
+        <div class="max-w-5xl mx-auto mt-6 pt-4 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-400 font-mono gap-2">
+            <div>
+                © 2026 Eyüp Ensar Erkul. GitHub Pages.
+            </div>
+            <div class="text-white">
+                "Peace, Love, Linux."
+            </div>
         </div>
     </footer>
 
     <script>
-        // Scroll Reveal Logic
-        const revealElements = document.querySelectorAll('.reveal');
+        // Typewriter Animation
+        const titles = [
+            "IT Student @ YTÜ Maçka MTAL",
+            "Open Source & Linux Developer",
+            "CachyOS / Arch Linux User",
+            "Software & Systems Enthusiast"
+        ];
         
-        const revealOptions = {
-            threshold: 0.1,
-            rootMargin: "0px 0px -50px 0px"
+        let titleIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        const typedTextElement = document.getElementById("typed-text");
+
+        function typeEffect() {
+            const currentTitle = titles[titleIndex];
+            
+            if (isDeleting) {
+                typedTextElement.textContent = currentTitle.substring(0, charIndex - 1);
+                charIndex--;
+            } else {
+                typedTextElement.textContent = currentTitle.substring(0, charIndex + 1);
+                charIndex++;
+            }
+
+            let typingSpeed = isDeleting ? 30 : 75;
+
+            if (!isDeleting && charIndex === currentTitle.length) {
+                typingSpeed = 2200;
+                isDeleting = true;
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                titleIndex = (titleIndex + 1) % titles.length;
+                typingSpeed = 350;
+            }
+
+            setTimeout(typeEffect, typingSpeed);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            typeEffect();
+        });
+
+        // CLI Shell Logic
+        const cliInput = document.getElementById("cli-input");
+        const terminalBody = document.getElementById("terminal-body");
+
+        const commands = {
+            'help': `Available Commands:
+  <span class="text-white font-semibold">whoami</span>    - Display user profile
+  <span class="text-white font-semibold">about</span>     - Education & focus
+  <span class="text-white font-semibold">skills</span>    - Technical stack
+  <span class="text-white font-semibold">projects</span>  - Featured projects
+  <span class="text-white font-semibold">motto</span>     - System philosophy
+  <span class="text-white font-semibold">contact</span>   - Links & profiles
+  <span class="text-white font-semibold">clear</span>     - Clear shell window`,
+
+            'whoami': `<span class="text-white">Eyüp Ensar Erkul</span> — IT Student & Open Source Developer based in Istanbul, TR.`,
+            
+            'about': `Education: <span class="text-white">YTÜ Maçka MTAL</span> (Bilişim Teknolojileri)
+Focus: Linux systems, open source software, desktop customisation, and backend architecture.`,
+
+            'skills': `Operating Systems: Linux (Arch, CachyOS), Hyprland, Fish Shell
+Languages: JavaScript, HTML5/CSS3, Python, C++
+Tools & Services: Git, GitHub, Appwrite, Cloudflare`,
+
+            'projects': `1. <span class="text-white">NyxLabs | Focus</span> - Pomodoro & Task Manager
+2. <span class="text-white">Nyx Converter</span> - Offline Client-Side Image Converter
+3. <span class="text-white">İyilik Köprüsü</span> - Social Solidarity Platform`,
+
+            'motto': `<span class="text-white">"Peace, Love, Linux."</span> 🐧`,
+
+            'contact': `GitHub:    https://github.com/eypensare
+Instagram: https://instagram.com/eypensare
+Website:   https://eypensare.github.io`
         };
 
-        const revealOnScroll = new IntersectionObserver(function(entries, observer) {
-            entries.forEach(entry => {
-                if (!entry.isIntersecting) {
-                    return;
+        cliInput.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                const commandText = this.value.trim().toLowerCase();
+                this.value = "";
+
+                if (!commandText) return;
+
+                const userLine = document.createElement("div");
+                userLine.innerHTML = `<span class="text-white font-semibold">ensar@eypensare:~$</span> ${escapeHTML(commandText)}`;
+                terminalBody.appendChild(userLine);
+
+                if (commandText === "clear") {
+                    terminalBody.innerHTML = `<div><span class="text-white">Terminal screen cleared.</span> Type <span class="text-white font-semibold">'help'</span> for options.</div>`;
+                } else if (commands[commandText]) {
+                    const responseLine = document.createElement("div");
+                    responseLine.className = "text-gray-300 pl-2 border-l border-white/20 my-1";
+                    responseLine.innerHTML = commands[commandText];
+                    terminalBody.appendChild(responseLine);
                 } else {
-                    entry.target.classList.add('active');
-                    observer.unobserve(entry.target);
+                    const errorLine = document.createElement("div");
+                    errorLine.className = "text-gray-400";
+                    errorLine.innerHTML = `bash: command not found: ${escapeHTML(commandText)}. Type '<span class="text-white">help</span>' for commands.`;
+                    terminalBody.appendChild(errorLine);
                 }
-            });
-        }, revealOptions);
 
-        revealElements.forEach(el => {
-            revealOnScroll.observe(el);
+                terminalBody.scrollTop = terminalBody.scrollHeight;
+            }
         });
 
-        // Mobile Menu Toggle
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const mobileLinks = document.querySelectorAll('.mobile-link');
-
-        mobileMenuBtn.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
-
-        // Close mobile menu on link click
-        mobileLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                mobileMenu.classList.add('hidden');
-            });
-        });
-        
-        // Typing effect for the greeting (optional detail for hacker feel)
-        const initTyping = () => {
-            const el = document.querySelector('.fa-terminal').nextSibling;
-            const text = " Merhaba dünya, ben";
-            el.textContent = "";
-            let i = 0;
-            const typeWriter = setInterval(() => {
-                if (i < text.length) {
-                    el.textContent += text.charAt(i);
-                    i++;
-                } else {
-                    clearInterval(typeWriter);
-                }
-            }, 50);
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
         }
-        
-        // Delay typing effect slightly for better UX on load
-        setTimeout(initTyping, 500);
 
+        // Copy Link Helper
+        function copyPageLink() {
+            const url = "https://eypensare.github.io/";
+            const tempInput = document.createElement("input");
+            tempInput.value = url;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+
+            const copyBtnText = document.getElementById("copy-btn-text");
+            copyBtnText.textContent = "Copied!";
+            setTimeout(() => {
+                copyBtnText.textContent = "Copy Link";
+            }, 2500);
+        }
     </script>
 </body>
 </html>
