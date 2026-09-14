@@ -1,749 +1,426 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>8C Highway 3D: Day & Night</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eyüp Ensar Erkul | Açık Kaynak Geliştirici</title>
+    <meta name="description" content="Bilişim Teknolojileri Öğrencisi & Açık Kaynak Geliştirici. Peace, love, Linux.">
+    
+    <!-- Google Fonts: Outfit (Modern Sans) & JetBrains Mono (Developer Font) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS (CDN for Single File Convenience) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <style>
-        :root {
-            --neon-blue: #00f2ff;
-            --neon-purple: #bc13fe;
-            --neon-red: #ff003c;
-        }
-        body { margin: 0; background: #020617; color: white; overflow: hidden; font-family: 'Inter', sans-serif; touch-action: none; }
-        #webgl-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
-        .font-orbitron { font-family: 'Orbitron', sans-serif; }
-        .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .car-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); min-width: 160px; }
-        .car-card.locked { opacity: 0.4; filter: grayscale(1); }
-        .car-card.selected-p1 { border: 2px solid var(--neon-blue); box-shadow: 0 0 15px var(--neon-blue); transform: scale(1.05); }
-        .car-card.selected-p2 { border: 2px solid var(--neon-purple); box-shadow: 0 0 15px var(--neon-purple); transform: scale(1.05); }
-        .nos-fill { transition: width 0.1s ease-out; }
-        
-        /* Custom Scrollbar for Garage */
-        ::-webkit-scrollbar { height: 8px; width: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #60a5fa; }
-
-        .toggle-btn { position: relative; width: 120px; height: 40px; border-radius: 20px; background: #1e293b; cursor: pointer; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s; }
-        .toggle-btn.night { background: #0f172a; border-color: #3b82f6; }
-        .toggle-circle { position: absolute; left: 4px; width: 32px; height: 32px; border-radius: 50%; background: #fbbf24; transition: all 0.3s; box-shadow: 0 0 10px #fbbf24; }
-        .toggle-btn.night .toggle-circle { left: 84px; background: #f8fafc; box-shadow: 0 0 15px #f8fafc; }
-    </style>
-</head>
-<body>
-
-<div id="game-container" class="relative w-full h-screen flex items-center justify-center overflow-hidden">
-    <div id="webgl-container"></div>
-    <div id="speed-vignette" class="absolute inset-0 pointer-events-none transition-opacity duration-300 opacity-0 z-10" style="box-shadow: inset 0 0 150px rgba(0,242,255,0.2);"></div>
-
-    <!-- Oyun İçi HUD (Sürüş Ekranı) -->
-    <div id="game-hud" class="absolute inset-0 p-6 pointer-events-none z-30 hidden">
-        <div id="p1-hud-box" class="absolute bottom-6 left-6 flex flex-col gap-3 items-start transition-all">
-            <div class="text-[10px] font-bold text-cyan-400 uppercase tracking-[0.2em] flex items-center gap-2">P1: <span id="p1-car-name-hud">---</span></div>
-            <div class="w-32 h-1.5 bg-slate-900 rounded-full border border-white/10 p-0.5 shadow-[0_0_10px_rgba(0,242,255,0.5)]"><div id="nos-fill-p1" class="nos-fill h-full bg-gradient-to-r from-cyan-400 to-blue-600 rounded-full"></div></div>
-            <div class="glass p-3 rounded-xl min-w-[140px]"><div class="text-[8px] text-cyan-400 font-bold uppercase">Skor: <span id="p1-live-score">0</span></div><div id="speed-meter-p1" class="text-xl font-orbitron font-black italic">0</div></div>
-        </div>
-        <div id="p2-hud-box" class="absolute bottom-6 right-6 flex flex-col gap-3 items-end hidden transition-all">
-            <div class="text-[10px] font-bold text-purple-400 uppercase tracking-[0.2em] flex items-center gap-2">P2: <span id="p2-car-name-hud">---</span></div>
-            <div class="w-32 h-1.5 bg-slate-900 rounded-full border border-white/10 p-0.5 shadow-[0_0_10px_rgba(188,19,254,0.5)]"><div id="nos-fill-p2" class="nos-fill h-full bg-gradient-to-r from-purple-400 to-pink-600 rounded-full"></div></div>
-            <div class="glass p-3 rounded-xl min-w-[140px] text-right"><div class="text-[8px] text-purple-400 font-bold uppercase">Skor: <span id="p2-live-score">0</span></div><div id="speed-meter-p2" class="text-xl font-orbitron font-black italic">0</div></div>
-        </div>
-        <div class="absolute top-6 left-1/2 -translate-x-1/2 flex flex-col items-center">
-             <div class="glass px-8 py-3 rounded-full flex gap-8 items-center border-white/20"><div class="text-center"><div class="text-[8px] text-blue-400 font-bold uppercase tracking-widest">Global Skor</div><div id="hud-score" class="text-2xl font-orbitron font-bold">0</div></div></div>
-        </div>
-    </div>
-
-    <!-- Ayarlar Modal -->
-    <div id="settings-modal" class="absolute inset-0 bg-black/90 flex items-center justify-center z-[150] hidden backdrop-blur-md">
-        <div class="glass p-8 rounded-3xl w-[400px] max-w-[90%] border border-blue-500/30">
-            <h2 class="text-3xl font-orbitron font-black text-white mb-8 uppercase italic">AYARLAR</h2>
-            
-            <div class="mb-8">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 block">GÜN / GECE AYARI</label>
-                <div id="time-toggle" class="toggle-btn mx-auto">
-                    <span class="text-[10px] font-bold text-yellow-500 ml-1">GÜNDÜZ</span>
-                    <div class="toggle-circle"></div>
-                    <span class="text-[10px] font-bold text-blue-400 mr-2">GECE</span>
-                </div>
-            </div>
-
-            <div class="mb-8">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 block">Trafik Yoğunluğu</label>
-                <div class="grid grid-cols-2 gap-3">
-                    <button class="setting-btn py-3 rounded-xl bg-slate-800 text-white font-bold text-sm hover:bg-blue-600 transition-colors" data-val="0.5">AZ</button>
-                    <button class="setting-btn py-3 rounded-xl bg-blue-600 text-white font-bold text-sm transition-colors" data-val="1.0">NORMAL</button>
-                    <button class="setting-btn py-3 rounded-xl bg-slate-800 text-white font-bold text-sm hover:bg-blue-600 transition-colors" data-val="1.5">YOĞUN</button>
-                    <button class="setting-btn py-3 rounded-xl bg-slate-800 text-white font-bold text-sm hover:bg-blue-600 transition-colors" data-val="2.5">KAOS</button>
-                </div>
-            </div>
-            <button id="close-settings" class="w-full py-4 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold font-orbitron text-white uppercase">KAPAT</button>
-        </div>
-    </div>
-
-    <!-- Ana Menü (Lobi) -->
-    <div id="menu-screen" class="absolute inset-0 bg-gradient-to-b from-[#020617]/90 via-[#020617]/20 to-[#020617] flex flex-col justify-between z-50 p-6 overflow-hidden">
-        
-        <!-- Üst Kısım -->
-        <div class="w-full max-w-6xl mx-auto flex flex-row justify-between items-start mt-4">
-            <div>
-                <div class="text-blue-500 font-bold tracking-[0.4em] uppercase text-xs mb-1">V5 3D ENGINE</div>
-                <h1 class="text-6xl font-orbitron font-black italic text-white tracking-tighter uppercase drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]">8C HIGHWAY</h1>
-            </div>
-            <div class="flex gap-4 items-center">
-                <button id="open-settings" class="glass p-4 rounded-2xl hover:bg-white/10 transition-colors z-50 relative">
-                    <svg class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                </button>
-                <div class="glass px-8 py-4 rounded-2xl flex items-center gap-4"><span id="menu-credits" class="text-3xl font-orbitron text-yellow-400 font-bold">0</span><span class="text-slate-400 text-xs font-bold uppercase">KREDİ</span></div>
-            </div>
-        </div>
-
-        <!-- Orta Kısım: 3D Önizleme İçin Boş Alan (Tıklama Almaz) -->
-        <div class="flex-1 w-full pointer-events-none flex flex-col items-center justify-center">
-            <div id="lobby-car-name" class="mt-[20vh] text-4xl font-orbitron font-black italic text-white/80 drop-shadow-lg uppercase tracking-widest">---</div>
-        </div>
-
-        <!-- Alt Kısım -->
-        <div class="w-full max-w-6xl mx-auto pb-8 z-50 relative">
-            <div class="flex flex-col md:flex-row justify-between items-end gap-6">
-                <div class="flex gap-4 items-center">
-                    <button id="mode-single" class="px-8 py-4 rounded-xl font-bold transition-all border-2 border-blue-500 bg-blue-500/20 text-white">TEK KİŞİLİK</button>
-                    <button id="mode-multi" class="px-8 py-4 rounded-xl font-bold transition-all border-2 border-slate-700 bg-slate-800/50 text-slate-400">İKİ KİŞİLİK</button>
-                </div>
-                <div class="flex gap-4 flex-col sm:flex-row">
-                    <button id="open-garage-btn" class="glass px-8 py-5 rounded-2xl font-black font-orbitron text-xl text-cyan-400 hover:text-cyan-300 hover:bg-cyan-900/30 transition-all uppercase flex items-center gap-3">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                        Araç Değiştir
-                    </button>
-                    <button id="start-btn" class="px-12 py-5 bg-blue-600 text-white font-black rounded-2xl hover:scale-[1.03] active:scale-95 transition-all font-orbitron text-2xl italic shadow-[0_0_25px_rgba(37,99,235,0.6)] uppercase">YARIŞA BAŞLA</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Garaj Ekranı -->
-    <div id="garage-screen" class="absolute inset-0 bg-[#020617]/95 backdrop-blur-xl flex flex-col items-center justify-start z-[60] p-6 hidden overflow-y-auto">
-        <div class="w-full max-w-6xl mt-4">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-5xl font-orbitron font-black italic text-white uppercase drop-shadow-lg">GARAJ</h2>
-                <div class="flex gap-4 items-center">
-                    <div class="glass px-6 py-3 rounded-xl flex items-center gap-3"><span id="garage-credits" class="text-2xl font-orbitron text-yellow-400 font-bold">0</span><span class="text-slate-400 text-[10px] font-bold uppercase">KREDİ</span></div>
-                    <button id="close-garage-btn" class="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all uppercase text-sm tracking-wider">Lobiye Dön</button>
-                </div>
-            </div>
-
-            <!-- Multiplayer Fokus Seçici -->
-            <div id="multiplayer-focus-toggle" class="hidden mb-6 flex gap-4">
-                <button id="focus-p1" class="px-8 py-3 rounded-lg border-2 border-cyan-400 bg-cyan-900/40 text-cyan-400 font-bold transition-all">P1 ARAÇ SEÇİMİ</button>
-                <button id="focus-p2" class="px-8 py-3 rounded-lg border-2 border-slate-700 bg-slate-800 text-slate-400 font-bold transition-all">P2 ARAÇ SEÇİMİ</button>
-            </div>
-
-            <div id="car-list" class="flex gap-6 mb-10 overflow-x-auto pb-6 pt-4 px-2 w-full"></div>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="glass p-8 rounded-3xl lg:col-span-2 flex flex-col md:flex-row justify-between items-center gap-8">
-                    <div class="flex-1">
-                        <div class="text-blue-500 font-bold tracking-[0.2em] uppercase text-[10px] mb-1" id="info-car-type">TYPE</div>
-                        <h3 id="info-car-name" class="text-4xl font-orbitron font-black italic mb-3 uppercase text-white">---</h3>
-                        <p id="info-car-desc" class="text-slate-400 text-sm italic">---</p>
-                    </div>
-                    <div class="w-full md:w-64 space-y-5">
-                        <div>
-                            <div class="flex justify-between text-xs font-bold uppercase mb-2 text-blue-400"><span>Maksimum Hız</span><span id="stat-spd-val">0</span></div>
-                            <div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div id="stat-spd-fill" class="h-full bg-blue-500 transition-all duration-500"></div></div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between text-xs font-bold uppercase mb-2 text-purple-400"><span>Hızlanma</span><span id="stat-acc-val">0</span></div>
-                            <div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div id="stat-acc-fill" class="h-full bg-purple-500 transition-all duration-500"></div></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex flex-col gap-4 justify-end">
-                    <div id="price-tag" class="text-center text-slate-400 text-sm font-bold uppercase mb-2">Fiyat: <span id="info-car-price" class="text-yellow-400 text-2xl font-orbitron">0 C</span></div>
-                    <button id="buy-btn" class="hidden w-full py-6 bg-yellow-500 text-black font-black rounded-2xl hover:bg-yellow-400 transition-all font-orbitron text-xl uppercase shadow-[0_0_15px_rgba(234,179,8,0.4)]">SATIN AL</button>
-                    <button id="select-btn" class="hidden w-full py-6 bg-cyan-600 text-white font-black rounded-2xl hover:bg-cyan-500 transition-all font-orbitron text-xl uppercase shadow-[0_0_15px_rgba(8,145,178,0.4)]">BU ARACI SEÇ</button>
-                    <button id="selected-btn" disabled class="hidden w-full py-6 bg-slate-800 text-slate-500 font-black rounded-2xl font-orbitron text-xl uppercase border border-slate-700">SEÇİLİ</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bitiş -->
-    <div id="game-over" class="absolute inset-0 bg-black/98 flex flex-col items-center justify-center hidden z-[100] backdrop-blur-3xl">
-        <h2 class="text-8xl font-orbitron font-black italic mb-4 text-white uppercase">OYUN <span class="text-red-600">BİTTİ</span></h2>
-        <div id="final-stats-box" class="grid grid-cols-1 md:grid-cols-2 gap-8 my-10 w-full max-w-4xl px-4 text-center"></div>
-        <div class="glass px-12 py-6 rounded-2xl mb-12 border border-yellow-500/40"><span class="text-slate-400 font-bold mr-4">TOPLAM KAZANÇ:</span><span id="final-earned" class="text-4xl font-orbitron font-bold text-yellow-400">+0 C</span></div>
-        <div class="flex gap-6"><button id="retry-btn" class="px-16 py-6 bg-white text-black font-orbitron font-black rounded-2xl uppercase hover:bg-gray-200 transition-colors">Tekrar Dene</button><button id="back-to-menu-btn" class="px-16 py-6 bg-slate-800 text-white font-orbitron font-black rounded-2xl uppercase hover:bg-slate-700 transition-colors">Lobiye Dön</button></div>
-    </div>
-</div>
-
-<script>
-window.onload = function() {
-    // --- GENİŞLETİLMİŞ ARAÇ DATASI ---
-    const CARS = {
-        tofas: { id: 'tofas', name: 'Şahin Drift', price: 0, color: 0xf8fafc, neon: 0x00f2ff, accel: 0.15, max: 20, w: 9, l: 20, desc: "Sokakların efsanesi. Başlangıç için ideal.", type: 'Klasik' },
-        mustang: { id: 'mustang', name: 'GT Muscle', price: 2500, color: 0xfacc15, neon: 0x000000, accel: 0.20, max: 28, w: 10, l: 21, desc: "Ağır, hantal ama son hızı tatmin edici Amerikan kası.", type: 'Muscle' },
-        yamaha: { id: 'yamaha', name: 'R6 Street', price: 5000, color: 0x2563eb, neon: 0x3b82f6, accel: 0.28, max: 32, w: 4, l: 12, desc: "Yüksek devir, saf adrenalin. Trafikte aralardan kaçmak için harika.", type: 'Motor' },
-        porsche: { id: 'porsche', name: '911 Carrera', price: 12000, color: 0xf8fafc, neon: 0xff003c, accel: 0.26, max: 35, w: 10, l: 20, desc: "Mükemmel denge, kusursuz viraj kabiliyeti.", type: 'Spor' },
-        gtr: { id: 'gtr', name: 'GTR-35 Nismo', price: 25000, color: 0x1e293b, neon: 0xff003c, accel: 0.25, max: 38, w: 11, l: 22, desc: "Japon mühendislik harikası. Godzilla yollarda.", type: 'Spor' },
-        lambo: { id: 'lambo', name: 'Aventador', price: 45000, color: 0xf97316, neon: 0x22c55e, accel: 0.35, max: 42, w: 11, l: 21, desc: "V12 motorun çığlığı. Lüks ve vahşet bir arada.", type: 'Süper Spor' },
-        h2r: { id: 'h2r', name: 'Ninja H2R', price: 65000, color: 0x10b981, neon: 0x10b981, accel: 0.40, max: 45, w: 5, l: 14, desc: "Asfaltın en hızlı iki tekerlekli canavarı.", type: 'Motor' },
-        cybertruck: { id: 'cybertruck', name: 'Cyber X', price: 100000, color: 0x94a3b8, neon: 0x3b82f6, accel: 0.30, max: 40, w: 11, l: 24, desc: "Gelecekten gelen zırhlı ve elektrikli dev.", type: 'Elektrikli' },
-        bugatti: { id: 'bugatti', name: 'Chiron Super', price: 150000, color: 0x1e3a8a, neon: 0x00f2ff, accel: 0.45, max: 50, w: 11, l: 22, desc: "Hız rekorları kırmak için yaratıldı.", type: 'Hiper Spor' },
-        f1: { id: 'f1', name: 'Formula X', price: 250000, color: 0xdc2626, neon: 0xffffff, accel: 0.50, max: 55, w: 12, l: 24, desc: "Pistlerden otobana transfer. Kusursuz hızlanma.", type: 'Yarış' }
-    };
-
-    const NPC_COLORS = [0xff8800, 0x00ffcc, 0xff00ee, 0xffff00, 0xffffff, 0xff4444, 0x5555ff];
-
-    // --- STATE ---
-    let credits = parseInt(localStorage.getItem('8c_credits_v5')) || 1000;
-    let ownedCars = JSON.parse(localStorage.getItem('8c_owned_v5')) || ['tofas'];
-    let trafficMod = parseFloat(localStorage.getItem('8c_traffic_v5')) || 1.0;
-    let isNight = localStorage.getItem('8c_night_v5') === 'true';
-    
-    let isMultiplayer = false;
-    let p1SelectedId = 'tofas';
-    let p2SelectedId = 'tofas';
-    
-    let garagePreviewId = 'tofas';
-    let garagePlayerFocus = 1; // 1: P1, 2: P2
-
-    let gameActive = false, keys = {};
-    let players = [], activeEnemies = [], enemyPool = [], roadLines = [], particlePool = [];
-
-    // --- THREE.JS ---
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    document.getElementById('webgl-container').appendChild(renderer.domElement);
-
-    // Ana Lobi Aracı Grubu
-    let menuCarGroup = new THREE.Group();
-    scene.add(menuCarGroup);
-
-    // Aydınlatma kurulumu
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    scene.add(ambientLight);
-
-    const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    sunLight.position.set(100, 200, 100);
-    sunLight.castShadow = true;
-    sunLight.shadow.mapSize.set(1024, 1024);
-    scene.add(sunLight);
-
-    function updateTimeStyle() {
-        if (isNight) {
-            scene.background = new THREE.Color(0x020617);
-            scene.fog = new THREE.Fog(0x020617, 100, 450);
-            ambientLight.intensity = 0.15;
-            sunLight.intensity = 0.1;
-            document.getElementById('time-toggle').classList.add('night');
-        } else {
-            scene.background = new THREE.Color(0x3b82f6);
-            scene.fog = new THREE.Fog(0x3b82f6, 300, 800);
-            ambientLight.intensity = 0.8;
-            sunLight.intensity = 1.2;
-            document.getElementById('time-toggle').classList.remove('night');
-        }
-        players.forEach(p => {
-            if (p.mesh.userData.spotLight) p.mesh.userData.spotLight.intensity = isNight ? 2.5 : 0;
-        });
-        if (menuCarGroup.children[0] && menuCarGroup.children[0].userData.spotLight) {
-            menuCarGroup.children[0].userData.spotLight.intensity = isNight ? 2.5 : 0;
-        }
-    }
-
-    // Yol
-    const roadGeo = new THREE.PlaneGeometry(120, 1500);
-    const roadMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
-    const road = new THREE.Mesh(roadGeo, roadMat);
-    road.rotation.x = -Math.PI/2;
-    road.position.z = -200;
-    road.receiveShadow = true;
-    scene.add(road);
-
-    // Çizgiler
-    const lineGeo = new THREE.PlaneGeometry(1, 10);
-    const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
-    for(let i=1; i<7; i++) {
-        for(let j=0; j<20; j++) {
-            const l = new THREE.Mesh(lineGeo, lineMat);
-            l.rotation.x = -Math.PI/2;
-            l.position.set(-60 + (i * 120/7), 0.1, -j * 40);
-            scene.add(l);
-            roadLines.push(l);
-        }
-    }
-
-    function createDetailedCar(type, colorHex, w, l, isPlayer, neonHex) {
-        const group = new THREE.Group();
-        const bodyGeo = new THREE.BoxGeometry(w, 4, l);
-        const bodyMat = new THREE.MeshStandardMaterial({ color: colorHex, metalness: 0.4, roughness: 0.4 });
-        const body = new THREE.Mesh(bodyGeo, bodyMat);
-        body.position.y = 3;
-        body.castShadow = true;
-        group.add(body);
-
-        if (type !== 'Motor') {
-            const cab = new THREE.Mesh(new THREE.BoxGeometry(w*0.8, 3, l*0.5), new THREE.MeshStandardMaterial({ color: 0x111111 }));
-            cab.position.set(0, 6.5, -l*0.1);
-            group.add(cab);
-        }
-
-        const wheelGeo = new THREE.CylinderGeometry(2, 2, 2, 12);
-        const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
-        [[ -w/2, 2, l/2-4 ], [ w/2, 2, l/2-4 ], [ -w/2, 2, -l/2+4 ], [ w/2, 2, -l/2+4 ]].forEach(pos => {
-            const wM = new THREE.Mesh(wheelGeo, wheelMat);
-            wM.rotation.z = Math.PI/2;
-            wM.position.set(...pos);
-            group.add(wM);
-        });
-
-        const blL = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 1), new THREE.MeshBasicMaterial({ color: 0x550000 }));
-        blL.position.set(-w/2+2, 4, l/2);
-        group.add(blL);
-        const blR = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 1), new THREE.MeshBasicMaterial({ color: 0x550000 }));
-        blR.position.set(w/2-2, 4, l/2);
-        group.add(blR);
-        group.userData.brakeMats = [blL.material, blR.material];
-
-        if (isPlayer) {
-            const sl = new THREE.SpotLight(0xffffff, isNight ? 2.5 : 0, 200, Math.PI/6, 0.5, 1);
-            sl.position.set(0, 5, -l/2);
-            sl.target.position.set(0, 0, -200);
-            group.add(sl);
-            group.add(sl.target);
-            group.userData.spotLight = sl;
-
-            const nL = new THREE.PointLight(neonHex, 2, 30);
-            nL.position.set(0, 1, 0);
-            group.add(nL);
-            
-            const nF = new THREE.Mesh(new THREE.BoxGeometry(w*0.8, 2, 6), new THREE.MeshBasicMaterial({ color: neonHex, transparent: true, opacity: 0 }));
-            nF.position.set(0, 3, l/2+3);
-            group.add(nF);
-            group.userData.nitroMesh = nF;
-        }
-        return group;
-    }
-
-    function initPools() {
-        enemyPool.forEach(e => scene.remove(e.mesh));
-        enemyPool = []; activeEnemies = [];
-        for(let i=0; i<30; i++) {
-            const mesh = createDetailedCar('Klasik', NPC_COLORS[i%7], 10, 22, false);
-            mesh.visible = false; scene.add(mesh);
-            enemyPool.push({ mesh, active: false, w:10, l:22, speed: 8 + Math.random()*5, lane: 0 });
-        }
-        particlePool.forEach(p => scene.remove(p.mesh));
-        particlePool = [];
-        for(let i=0; i<40; i++) {
-            const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xffaa00 }));
-            mesh.visible = false; scene.add(mesh);
-            particlePool.push({ mesh, active: false, life: 0, vx:0, vy:0, vz:0 });
-        }
-    }
-
-    function spawnEnemy() {
-        if(!gameActive) return;
-        const e = enemyPool.find(x => !x.active);
-        if(e) {
-            e.active = true; e.mesh.visible = true;
-            e.lane = Math.floor(Math.random() * 7);
-            e.mesh.position.set(-60 + (e.lane * 120/7) + 120/14, 0, -450);
-            activeEnemies.push(e);
-        }
-        setTimeout(spawnEnemy, 2000 / trafficMod);
-    }
-
-    // --- KAMERA YÖNETİMİ ---
-    function setMenuCamera() {
-        // Lobi için kamerayı sağ çarprazdan arabaya bakacak şekilde ayarla
-        camera.position.set(25, 12, 30);
-        camera.lookAt(0, 3, 0);
-        menuCarGroup.position.set(0, 0, 0);
-        menuCarGroup.visible = true;
-        
-        // Trafiği lobide temizle ki menü aracının içinden geçmesinler
-        activeEnemies.forEach(e => { e.active = false; e.mesh.visible = false; });
-        activeEnemies = [];
-    }
-
-    function setGameCamera() {
-        camera.position.set(0, 35, 60);
-        camera.lookAt(0, 0, -50);
-        menuCarGroup.visible = false;
-    }
-
-    function updateLobbyCarVisual() {
-        // Ekrandaki p1 aracını yeniler
-        while(menuCarGroup.children.length > 0){ 
-            menuCarGroup.remove(menuCarGroup.children[0]); 
-        }
-        const cur = CARS[p1SelectedId];
-        const m = createDetailedCar(cur.type, cur.color, cur.w, cur.l, true, cur.neon);
-        menuCarGroup.add(m);
-        document.getElementById('lobby-car-name').innerText = cur.name;
-    }
-
-    function animate() {
-        requestAnimationFrame(animate);
-
-        if(!gameActive) {
-            // Lobi animasyonu: aracı yavaşça döndür, yolda çizgiler aksın
-            if (menuCarGroup) menuCarGroup.rotation.y += 0.003;
-            roadLines.forEach(l => {
-                l.position.z += 1.5;
-                if(l.position.z > 50) l.position.z -= 600;
-            });
-            renderer.render(scene, camera); 
-            return; 
-        }
-
-        const activePlayers = players.filter(p => !p.dead);
-        if (activePlayers.length === 0) { endGame(); return; }
-        const avgSpeed = activePlayers.reduce((s,p) => s+p.speed, 0) / activePlayers.length;
-
-        roadLines.forEach(l => {
-            l.position.z += avgSpeed * 0.5;
-            if(l.position.z > 50) l.position.z -= 600;
-        });
-
-        players.forEach((p, idx) => {
-            if(p.dead) return;
-            const isAcc = idx === 0 ? keys['KeyW'] : keys['ArrowUp'];
-            const isBrk = idx === 0 ? keys['KeyS'] : keys['ArrowDown'];
-            const isL = idx === 0 ? keys['KeyA'] : keys['ArrowLeft'];
-            const isR = idx === 0 ? keys['KeyD'] : keys['ArrowRight'];
-            const isNos = idx === 0 ? keys['KeyE'] : keys['Numpad0'];
-
-            p.usingNos = isNos && p.nosLevel > 5;
-            if (p.usingNos) { p.speed = Math.min(p.speed + 0.4, p.car.max + 15); p.nosLevel -= 0.8; }
-            else {
-                if (isAcc) p.speed = Math.min(p.speed + p.car.accel, p.car.max);
-                else p.speed = Math.max(p.speed - 0.1, 0);
-                if (isBrk) p.speed = Math.max(p.speed - 0.7, 0);
-                if (p.nosLevel < 100) p.nosLevel += 0.2;
-            }
-
-            p.mesh.userData.brakeMats.forEach(m => m.color.setHex(isBrk ? 0xff0000 : 0x550000));
-            p.mesh.userData.nitroMesh.material.opacity = p.usingNos ? 0.8 : 0;
-
-            const steer = (isL ? -1 : (isR ? 1 : 0)) * 1.5;
-            p.mesh.position.x += steer;
-            p.mesh.position.x = Math.max(-55, Math.min(55, p.mesh.position.x));
-            p.mesh.rotation.y = -steer * 0.1;
-
-            p.mesh.position.z += ((avgSpeed - p.speed) * 3 - p.mesh.position.z) * 0.1;
-            p.score += p.speed / 10;
-
-            document.getElementById(`speed-meter-p${idx+1}`).innerText = Math.floor(p.speed * 10) + " KM/H";
-            document.getElementById(`nos-fill-p${idx+1}`).style.width = p.nosLevel + "%";
-            document.getElementById(`p${idx+1}-live-score`).innerText = Math.floor(p.score).toLocaleString();
-        });
-
-        activeEnemies.forEach((e, i) => {
-            e.mesh.position.z += (avgSpeed - e.speed) * 0.5;
-            players.forEach(p => {
-                if (p.dead) return;
-                if (Math.abs(e.mesh.position.x - p.mesh.position.x) < 10 && Math.abs(e.mesh.position.z - p.mesh.position.z) < 20) {
-                    p.dead = true; p.mesh.visible = false;
-                    for(let k=0; k<15; k++) {
-                        const part = particlePool.find(x => !x.active);
-                        if(part) {
-                            part.active = true; part.mesh.visible = true; part.mesh.position.copy(p.mesh.position);
-                            part.vx = (Math.random()-0.5)*2; part.vy = Math.random()*2; part.vz = (Math.random()-0.5)*2; part.life = 1.0;
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            black: '#050505',
+                            dark: '#0a0a0a',
+                            green: '#00ff66',
+                            greenDark: '#00cc52',
                         }
                     }
                 }
-            });
-            if(e.mesh.position.z > 100) { e.active = false; e.mesh.visible = false; activeEnemies.splice(i, 1); }
-        });
-
-        particlePool.forEach(p => {
-            if(p.active) {
-                p.mesh.position.x += p.vx; p.mesh.position.y += p.vy; p.mesh.position.z += p.vz + avgSpeed*0.3;
-                p.vy -= 0.1; p.life -= 0.02; p.mesh.scale.set(p.life, p.life, p.life);
-                if(p.life <= 0) { p.active = false; p.mesh.visible = false; }
             }
-        });
-
-        document.getElementById('hud-score').innerText = Math.floor(players.reduce((s,p)=>s+p.score,0)).toLocaleString();
-        renderer.render(scene, camera);
-    }
-
-    // --- ARAYÜZ (GARAJ & LOBİ) ---
-    function updateLobbyUI() {
-        document.getElementById('menu-credits').innerText = credits.toLocaleString();
-        
-        const btnSingle = document.getElementById('mode-single');
-        const btnMulti = document.getElementById('mode-multi');
-        
-        if(isMultiplayer) {
-            btnMulti.classList.replace('border-slate-700', 'border-blue-500');
-            btnMulti.classList.replace('bg-slate-800/50', 'bg-blue-500/20');
-            btnMulti.classList.replace('text-slate-400', 'text-white');
-            
-            btnSingle.classList.replace('border-blue-500', 'border-slate-700');
-            btnSingle.classList.replace('bg-blue-500/20', 'bg-slate-800/50');
-            btnSingle.classList.replace('text-white', 'text-slate-400');
-            
-            document.getElementById('multiplayer-focus-toggle').classList.remove('hidden');
-        } else {
-            btnSingle.classList.replace('border-slate-700', 'border-blue-500');
-            btnSingle.classList.replace('bg-slate-800/50', 'bg-blue-500/20');
-            btnSingle.classList.replace('text-slate-400', 'text-white');
-            
-            btnMulti.classList.replace('border-blue-500', 'border-slate-700');
-            btnMulti.classList.replace('bg-blue-500/20', 'bg-slate-800/50');
-            btnMulti.classList.replace('text-white', 'text-slate-400');
-            
-            document.getElementById('multiplayer-focus-toggle').classList.add('hidden');
-            garagePlayerFocus = 1; // Güvenlik için P1'e al
         }
-        updateLobbyCarVisual();
-    }
+    </script>
 
-    function updateGarageUI() {
-        document.getElementById('garage-credits').innerText = credits.toLocaleString();
-        const list = document.getElementById('car-list'); list.innerHTML = '';
+    <style>
+        /* Base Styling & Scrollbar */
+        body {
+            background-color: #050505;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
         
-        // P1 ve P2 focus butonları stili
-        const focusP1 = document.getElementById('focus-p1');
-        const focusP2 = document.getElementById('focus-p2');
-        if(garagePlayerFocus === 1) {
-            focusP1.className = "px-8 py-3 rounded-lg border-2 border-cyan-400 bg-cyan-900/40 text-cyan-400 font-bold transition-all shadow-[0_0_15px_rgba(34,211,238,0.3)]";
-            focusP2.className = "px-8 py-3 rounded-lg border-2 border-slate-700 bg-slate-800 text-slate-400 font-bold transition-all hover:bg-slate-700";
-        } else {
-            focusP2.className = "px-8 py-3 rounded-lg border-2 border-purple-400 bg-purple-900/40 text-purple-400 font-bold transition-all shadow-[0_0_15px_rgba(192,132,252,0.3)]";
-            focusP1.className = "px-8 py-3 rounded-lg border-2 border-slate-700 bg-slate-800 text-slate-400 font-bold transition-all hover:bg-slate-700";
+        ::selection {
+            background-color: rgba(0, 255, 102, 0.3);
+            color: #00ff66;
         }
 
-        Object.values(CARS).forEach(car => {
-            const card = document.createElement('div');
-            // Kart stili belirleme
-            let isCurrentSelected = (garagePlayerFocus === 1 && p1SelectedId === car.id) || (garagePlayerFocus === 2 && p2SelectedId === car.id);
-            let isPreviewed = garagePreviewId === car.id;
-            
-            let baseClasses = `car-card glass p-5 rounded-3xl cursor-pointer flex-shrink-0 w-48`;
-            if(!ownedCars.includes(car.id)) baseClasses += ` locked`;
-            
-            if(isPreviewed) {
-                let glowColor = garagePlayerFocus === 1 ? 'var(--neon-blue)' : 'var(--neon-purple)';
-                baseClasses += ` border-2 border-blue-400 shadow-[0_0_15px_${glowColor}] scale-105`;
-            }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1a1a1a;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00ff66;
+        }
 
-            card.className = baseClasses;
-            card.onclick = () => {
-                garagePreviewId = car.id;
-                updateGarageUI();
-            };
-            
-            const cssNeon = '#' + car.neon.toString(16).padStart(6, '0');
-            card.innerHTML = `
-                <div class="text-[9px] font-bold text-slate-500 mb-2 uppercase">${car.type}</div>
-                <div class="text-xl font-orbitron font-black italic mb-3 text-white truncate">${car.name}</div>
-                <div class="flex justify-between items-center">
-                    <div class="w-8 h-2 rounded-full" style="background:${cssNeon}; box-shadow: 0 0 8px ${cssNeon}"></div>
-                    <div class="text-[10px] font-bold ${ownedCars.includes(car.id) ? 'text-green-400' : 'text-yellow-400'}">${ownedCars.includes(car.id) ? 'SAHİP' : car.price + ' C'}</div>
+        /* Background Effects */
+        .bg-glow {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.15;
+            animation: pulse-glow 8s infinite alternate ease-in-out;
+        }
+        .glow-1 {
+            top: -10%; left: -10%;
+            width: 50vw; height: 50vw;
+            background: radial-gradient(circle, #00ff66 0%, transparent 70%);
+        }
+        .glow-2 {
+            bottom: -20%; right: -10%;
+            width: 60vw; height: 60vw;
+            background: radial-gradient(circle, #00ff66 0%, transparent 70%);
+            animation-delay: -4s;
+        }
+
+        /* Glassmorphism Classes */
+        .glass {
+            background: rgba(15, 15, 15, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .glass-card {
+            background: linear-gradient(145deg, rgba(20, 20, 20, 0.6) 0%, rgba(10, 10, 10, 0.3) 100%);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 255, 102, 0.05);
+            border-top: 1px solid rgba(0, 255, 102, 0.15);
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .glass-card:hover {
+            border-color: rgba(0, 255, 102, 0.4);
+            box-shadow: 0 10px 40px -10px rgba(0, 255, 102, 0.15);
+            transform: translateY(-5px);
+        }
+
+        /* Text Gradients & Utilities */
+        .text-gradient {
+            background: linear-gradient(to right, #ffffff, #888888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .text-green-gradient {
+            background: linear-gradient(to right, #00ff66, #00b347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Animations */
+        @keyframes pulse-glow {
+            0% { transform: scale(1); opacity: 0.1; }
+            100% { transform: scale(1.2); opacity: 0.2; }
+        }
+
+        /* Scroll Reveal Utility */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .terminal-text::after {
+            content: '_';
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body class="antialiased selection:bg-brand-green selection:bg-opacity-20 selection:text-brand-green">
+
+    <div class="bg-glow glow-1"></div>
+    <div class="bg-glow glow-2"></div>
+
+    <nav class="fixed w-full z-50 glass top-0">
+        <div class="max-w-6xl mx-auto px-6 lg:px-8 py-4 flex justify-between items-center">
+            <a href="#" class="text-xl font-bold font-mono tracking-tighter text-white hover:text-brand-green transition-colors">
+                <span class="text-brand-green">~/</span>erkul<span class="animate-pulse">_</span>
+            </a>
+            <div class="hidden md:flex space-x-8 text-sm font-mono text-gray-400">
+                <a href="#about" class="hover:text-brand-green transition-colors hover:-translate-y-0.5 transform block">01. Hakkımda</a>
+                <a href="#projects" class="hover:text-brand-green transition-colors hover:-translate-y-0.5 transform block">02. Projeler</a>
+                <a href="#contact" class="hover:text-brand-green transition-colors hover:-translate-y-0.5 transform block">03. İletişim</a>
+            </div>
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-gray-300 hover:text-brand-green" id="mobile-menu-btn">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+        </div>
+        <!-- Mobile Menu (Hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden glass border-t border-gray-800 absolute w-full left-0">
+            <div class="flex flex-col px-6 py-4 space-y-4 font-mono text-sm">
+                <a href="#about" class="text-gray-300 hover:text-brand-green mobile-link">01. Hakkımda</a>
+                <a href="#projects" class="text-gray-300 hover:text-brand-green mobile-link">02. Projeler</a>
+                <a href="#contact" class="text-gray-300 hover:text-brand-green mobile-link">03. İletişim</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-6 lg:px-8">
+        
+        <section class="min-h-screen flex flex-col justify-center pt-20 pb-10">
+            <div class="reveal">
+                <p class="font-mono text-brand-green mb-4 flex items-center gap-2 text-sm md:text-base">
+                    <i class="fa-solid fa-terminal"></i> Merhaba dünya, ben
+                </p>
+                <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-4 text-gradient">
+                    Eyüp Ensar Erkul.
+                </h1>
+                <h2 class="text-3xl md:text-5xl font-bold text-gray-400 mb-6">
+                    Bilişim Teknolojileri Öğrencisi <br class="hidden md:block"> & Açık Kaynak Geliştirici.
+                </h2>
+                
+                <p class="max-w-2xl text-gray-400 text-lg md:text-xl leading-relaxed mb-10">
+                    Açık kaynak felsefesiyle kodluyor, modern teknolojilerle üretmeyi seviyorum. 
+                    Karmaşıklığı basitliğe indirgeyen sistemler inşa etmeye odaklanıyorum.
+                    <br><br>
+                    <span class="font-mono text-brand-green bg-brand-green bg-opacity-10 px-2 py-1 rounded inline-block">
+                        "Peace, love, Linux."
+                    </span>
+                </p>
+                
+                <div class="flex flex-wrap gap-4 font-mono text-sm">
+                    <a href="#projects" class="glass px-6 py-3 rounded-md text-brand-green border-brand-green/30 hover:bg-brand-green hover:bg-opacity-10 transition-all flex items-center gap-2">
+                        <i class="fa-brands fa-github"></i> Projelerimi Gör
+                    </a>
+                    <a href="#contact" class="px-6 py-3 rounded-md text-gray-300 hover:text-white transition-all flex items-center gap-2">
+                        İletişime Geç <i class="fa-solid fa-arrow-right"></i>
+                    </a>
                 </div>
-                ${isCurrentSelected ? `<div class="mt-3 text-[10px] text-center font-bold bg-white/10 py-1 rounded uppercase tracking-wider ${garagePlayerFocus === 1 ? 'text-cyan-300' : 'text-purple-300'}">SEÇİLİ</div>` : ''}
-            `;
-            list.appendChild(card);
+            </div>
+        </section>
+
+        <section id="about" class="py-24">
+            <div class="reveal flex items-center gap-4 mb-12">
+                <h3 class="text-2xl md:text-3xl font-bold font-mono text-white">
+                    <span class="text-brand-green">01.</span> Hakkımda & Yetenekler
+                </h3>
+                <div class="h-px bg-gray-800 flex-grow max-w-xs"></div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Skill Card 1 -->
+                <div class="glass-card p-6 reveal">
+                    <div class="w-12 h-12 rounded-lg bg-brand-green bg-opacity-10 flex items-center justify-center text-brand-green text-2xl mb-4">
+                        <i class="fa-brands fa-linux"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-2">Linux & Arch</h4>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Sistemin her hücresine hakim olma tutkusu. Arch Linux'un sunduğu özgürlük ve terminalin gücüyle çalışmayı seviyorum.
+                    </p>
+                </div>
+                
+                <!-- Skill Card 2 -->
+                <div class="glass-card p-6 reveal" style="transition-delay: 100ms;">
+                    <div class="w-12 h-12 rounded-lg bg-brand-green bg-opacity-10 flex items-center justify-center text-brand-green text-2xl mb-4">
+                        <i class="fa-brands fa-osi"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-2">Açık Kaynak</h4>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Bilgiyi paylaşmanın ve toplulukla büyümenin gücüne inanıyorum. Open-source projelere katkı sağlamak en büyük motivasyonum.
+                    </p>
+                </div>
+
+                <!-- Skill Card 3 -->
+                <div class="glass-card p-6 reveal" style="transition-delay: 200ms;">
+                    <div class="w-12 h-12 rounded-lg bg-brand-green bg-opacity-10 flex items-center justify-center text-brand-green text-2xl mb-4">
+                        <i class="fa-solid fa-code"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-2">Geliştirme</h4>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Modern diller ve araçlarla performanslı çözümler üretmek. Minimalist kod yapısı ve temiz mimariler.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="projects" class="py-24">
+            <div class="reveal flex items-center gap-4 mb-12">
+                <h3 class="text-2xl md:text-3xl font-bold font-mono text-white">
+                    <span class="text-brand-green">02.</span> Açık Kaynak Projeler
+                </h3>
+                <div class="h-px bg-gray-800 flex-grow max-w-xs"></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Project 1 -->
+                <div class="glass-card p-8 group reveal relative overflow-hidden">
+                    <!-- Deco element -->
+                    <div class="absolute -right-10 -top-10 text-9xl text-gray-800 opacity-20 transform group-hover:rotate-12 transition-transform duration-500">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
+                    
+                    <div class="flex justify-between items-start mb-6 relative z-10">
+                        <div class="text-4xl text-brand-green">
+                            <i class="fa-brands fa-github"></i>
+                        </div>
+                        <div class="flex gap-4">
+                            <a href="#" class="text-gray-400 hover:text-brand-green transition-colors" title="GitHub Repo"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                        </div>
+                    </div>
+                    
+                    <h4 class="text-2xl font-bold mb-3 group-hover:text-brand-green transition-colors relative z-10">Dotfiles & Sistem Yapılandırmaları</h4>
+                    <p class="text-gray-400 text-sm mb-6 relative z-10 leading-relaxed">
+                        Arch Linux için kişisel pencere yöneticisi (TWM), terminal emülatörü ve neovim yapılandırmalarımı barındıran repo. Tamamen verimlilik odaklı.
+                    </p>
+                    
+                    <ul class="flex flex-wrap gap-3 font-mono text-xs text-brand-green relative z-10">
+                        <li>Bash</li>
+                        <li>Lua</li>
+                        <li>Hyprland</li>
+                    </ul>
+                </div>
+
+                <!-- Project 2 -->
+                <div class="glass-card p-8 group reveal relative overflow-hidden" style="transition-delay: 100ms;">
+                    <div class="absolute -right-10 -top-10 text-9xl text-gray-800 opacity-20 transform group-hover:rotate-12 transition-transform duration-500">
+                        <i class="fa-solid fa-terminal"></i>
+                    </div>
+                    
+                    <div class="flex justify-between items-start mb-6 relative z-10">
+                        <div class="text-4xl text-brand-green">
+                            <i class="fa-brands fa-github"></i>
+                        </div>
+                        <div class="flex gap-4">
+                            <a href="#" class="text-gray-400 hover:text-brand-green transition-colors" title="GitHub Repo"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                        </div>
+                    </div>
+                    
+                    <h4 class="text-2xl font-bold mb-3 group-hover:text-brand-green transition-colors relative z-10">CLI Araç Kutusu</h4>
+                    <p class="text-gray-400 text-sm mb-6 relative z-10 leading-relaxed">
+                        Günlük terminal işlemlerini hızlandırmak için geliştirdiğim açık kaynak komut satırı araçları.
+                    </p>
+                    
+                    <ul class="flex flex-wrap gap-3 font-mono text-xs text-brand-green relative z-10">
+                        <li>Python</li>
+                        <li>Shell Scripting</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="text-center mt-12 reveal">
+                <a href="#" class="inline-block font-mono text-sm text-brand-green hover:underline decoration-brand-green underline-offset-4 transition-all">
+                    Tüm projelerimi GitHub'da incele <i class="fa-solid fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        </section>
+
+        <section id="contact" class="py-32 text-center max-w-2xl mx-auto">
+            <div class="reveal">
+                <p class="font-mono text-brand-green text-sm mb-4">03. Sıradaki Adım?</p>
+                <h3 class="text-4xl md:text-5xl font-bold text-white mb-6">İletişimde Kalalım</h3>
+                <p class="text-gray-400 text-sm md:text-base leading-relaxed mb-10">
+                    Açık kaynak projeler, linux muhabbeti, teknoloji hakkında konuşmak veya sadece merhaba demek isterseniz sosyal medya veya e-posta üzerinden bana ulaşabilirsiniz.
+                </p>
+                
+                <div class="flex justify-center gap-6 mb-12">
+                    <a href="https://github.com" target="_blank" class="w-14 h-14 rounded-full glass flex items-center justify-center text-xl text-gray-300 hover:text-brand-green hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-brand-green/30">
+                        <i class="fa-brands fa-github"></i>
+                    </a>
+                    <a href="https://instagram.com" target="_blank" class="w-14 h-14 rounded-full glass flex items-center justify-center text-xl text-gray-300 hover:text-brand-green hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-brand-green/30">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                    <a href="mailto:ornek@mail.com" class="w-14 h-14 rounded-full glass flex items-center justify-center text-xl text-gray-300 hover:text-brand-green hover:-translate-y-1 transition-all duration-300 border border-transparent hover:border-brand-green/30">
+                        <i class="fa-solid fa-envelope"></i>
+                    </a>
+                </div>
+                
+                <a href="mailto:ornek@mail.com" class="font-mono text-brand-green border border-brand-green px-8 py-4 rounded hover:bg-brand-green hover:bg-opacity-10 transition-colors">
+                    Terminali Aç (E-posta Gönder)
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="py-8 text-center border-t border-gray-900 mt-10">
+        <div class="font-mono text-xs text-gray-500 flex flex-col items-center gap-2">
+            <p>Designed & Built by Eyüp Ensar Erkul</p>
+            <p class="flex items-center gap-2">
+                <i class="fa-solid fa-code"></i> with <i class="fa-solid fa-heart text-brand-green"></i> and <i class="fa-brands fa-linux"></i>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Scroll Reveal Logic
+        const revealElements = document.querySelectorAll('.reveal');
+        
+        const revealOptions = {
+            threshold: 0.1,
+            rootMargin: "0px 0px -50px 0px"
+        };
+
+        const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) {
+                    return;
+                } else {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, revealOptions);
+
+        revealElements.forEach(el => {
+            revealOnScroll.observe(el);
         });
 
-        // Detay panelini güncelle
-        const cur = CARS[garagePreviewId];
-        document.getElementById('info-car-name').innerText = cur.name;
-        document.getElementById('info-car-desc').innerText = cur.desc;
-        document.getElementById('info-car-type').innerText = cur.type;
-        document.getElementById('info-car-price').innerText = cur.price + ' C';
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Close mobile menu on link click
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
         
-        // Animasyonlu barlar
-        setTimeout(() => {
-            document.getElementById('stat-spd-fill').style.width = (cur.max / 60) * 100 + '%';
-            document.getElementById('stat-acc-fill').style.width = (cur.accel / 0.6) * 100 + '%';
-        }, 50);
-
-        const buyBtn = document.getElementById('buy-btn');
-        const selectBtn = document.getElementById('select-btn');
-        const selectedBtn = document.getElementById('selected-btn');
-
-        buyBtn.classList.add('hidden');
-        selectBtn.classList.add('hidden');
-        selectedBtn.classList.add('hidden');
-
-        document.getElementById('price-tag').classList.add('hidden');
-
-        let isCurrentSelected = (garagePlayerFocus === 1 && p1SelectedId === garagePreviewId) || (garagePlayerFocus === 2 && p2SelectedId === garagePreviewId);
-
-        if(!ownedCars.includes(garagePreviewId)) {
-            buyBtn.classList.remove('hidden');
-            document.getElementById('price-tag').classList.remove('hidden');
-        } else if (isCurrentSelected) {
-            selectedBtn.classList.remove('hidden');
-        } else {
-            selectBtn.classList.remove('hidden');
-            // Renk ayarlama (P1 mavi, P2 mor)
-            if(garagePlayerFocus === 1) {
-                selectBtn.className = "w-full py-6 bg-cyan-600 text-white font-black rounded-2xl hover:bg-cyan-500 transition-all font-orbitron text-xl uppercase shadow-[0_0_15px_rgba(8,145,178,0.4)]";
-            } else {
-                selectBtn.className = "w-full py-6 bg-purple-600 text-white font-black rounded-2xl hover:bg-purple-500 transition-all font-orbitron text-xl uppercase shadow-[0_0_15px_rgba(147,51,234,0.4)]";
-            }
+        // Typing effect for the greeting (optional detail for hacker feel)
+        const initTyping = () => {
+            const el = document.querySelector('.fa-terminal').nextSibling;
+            const text = " Merhaba dünya, ben";
+            el.textContent = "";
+            let i = 0;
+            const typeWriter = setInterval(() => {
+                if (i < text.length) {
+                    el.textContent += text.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(typeWriter);
+                }
+            }, 50);
         }
-    }
-
-    // --- EVENT LISTENERS ---
-    
-    // Gündüz/Gece Toggle
-    document.getElementById('time-toggle').onclick = function() {
-        isNight = !isNight;
-        localStorage.setItem('8c_night_v5', isNight);
-        updateTimeStyle();
-    };
-
-    // Mod Seçimi
-    document.getElementById('mode-single').onclick = () => { isMultiplayer = false; updateLobbyUI(); };
-    document.getElementById('mode-multi').onclick = () => { isMultiplayer = true; updateLobbyUI(); };
-
-    // Garaj Aç / Kapat
-    document.getElementById('open-garage-btn').onclick = () => {
-        garagePreviewId = garagePlayerFocus === 1 ? p1SelectedId : p2SelectedId;
-        document.getElementById('menu-screen').style.display = 'none';
-        document.getElementById('garage-screen').style.display = 'flex';
-        updateGarageUI();
-    };
-    
-    document.getElementById('close-garage-btn').onclick = () => {
-        document.getElementById('garage-screen').style.display = 'none';
-        document.getElementById('menu-screen').style.display = 'flex';
-        updateLobbyUI(); // Lobiye dönerken ortadaki aracı güncelle
-    };
-
-    // Garaj İçi Focus
-    document.getElementById('focus-p1').onclick = () => { garagePlayerFocus = 1; garagePreviewId = p1SelectedId; updateGarageUI(); };
-    document.getElementById('focus-p2').onclick = () => { garagePlayerFocus = 2; garagePreviewId = p2SelectedId; updateGarageUI(); };
-
-    // Satın Alma ve Seçme İşlemleri
-    document.getElementById('buy-btn').onclick = () => {
-        const cur = CARS[garagePreviewId];
-        if(credits >= cur.price) { 
-            credits -= cur.price; 
-            ownedCars.push(cur.id); 
-            localStorage.setItem('8c_credits_v5', credits); 
-            localStorage.setItem('8c_owned_v5', JSON.stringify(ownedCars)); 
-            
-            // Satın alınca otomatik seç
-            if(garagePlayerFocus === 1) p1SelectedId = garagePreviewId;
-            else p2SelectedId = garagePreviewId;
-            
-            updateGarageUI(); 
-        } else {
-            // Bakiyesiz uyarısı eklenebilir, şimdilik butonu titretebiliriz
-            const btn = document.getElementById('buy-btn');
-            btn.classList.add('bg-red-600');
-            btn.innerText = "YETERSİZ KREDİ";
-            setTimeout(() => { btn.classList.remove('bg-red-600'); btn.innerText = "SATIN AL"; }, 1000);
-        }
-    };
-
-    document.getElementById('select-btn').onclick = () => {
-        if(garagePlayerFocus === 1) p1SelectedId = garagePreviewId;
-        else p2SelectedId = garagePreviewId;
-        updateGarageUI();
-    };
-
-    // Ayarlar
-    const settingsBtns = document.querySelectorAll('.setting-btn');
-    settingsBtns.forEach(btn => {
-        if(parseFloat(btn.dataset.val) === trafficMod) {
-            btn.classList.add('bg-blue-600'); btn.classList.remove('bg-slate-800');
-        }
-        btn.onclick = () => {
-            settingsBtns.forEach(b => { b.classList.remove('bg-blue-600'); b.classList.add('bg-slate-800'); });
-            btn.classList.add('bg-blue-600'); btn.classList.remove('bg-slate-800');
-            trafficMod = parseFloat(btn.dataset.val);
-            localStorage.setItem('8c_traffic_v5', trafficMod);
-        };
-    });
-
-    document.getElementById('open-settings').onclick = () => document.getElementById('settings-modal').classList.remove('hidden');
-    document.getElementById('close-settings').onclick = () => document.getElementById('settings-modal').classList.add('hidden');
-
-    // Oyun Başlat / Bitir
-    function startGame() {
-        document.getElementById('menu-screen').style.display = 'none';
-        document.getElementById('game-over').classList.add('hidden');
-        document.getElementById('game-hud').classList.remove('hidden');
         
-        setGameCamera();
-        players.forEach(p => scene.remove(p.mesh));
-        initPools();
-        
-        const c1 = CARS[p1SelectedId];
-        const m1 = createDetailedCar(c1.type, c1.color, c1.w, c1.l, true, c1.neon);
-        m1.position.set(isMultiplayer ? -20 : 0, 0, 0); scene.add(m1);
-        players = [{ car: c1, mesh: m1, speed: 0, nosLevel: 100, score: 0, dead: false }];
-        document.getElementById('p1-car-name-hud').innerText = c1.name;
+        // Delay typing effect slightly for better UX on load
+        setTimeout(initTyping, 500);
 
-        if(isMultiplayer) {
-            const c2 = CARS[p2SelectedId];
-            const m2 = createDetailedCar(c2.type, c2.color, c2.w, c2.l, true, c2.neon);
-            m2.position.set(20, 0, 0); scene.add(m2);
-            players.push({ car: c2, mesh: m2, speed: 0, nosLevel: 100, score: 0, dead: false });
-            document.getElementById('p2-hud-box').classList.remove('hidden');
-            document.getElementById('p2-car-name-hud').innerText = c2.name;
-        } else {
-            document.getElementById('p2-hud-box').classList.add('hidden');
-        }
-
-        gameActive = true; keys = {};
-        updateTimeStyle();
-        spawnEnemy();
-    }
-
-    function endGame() {
-        gameActive = false;
-        const earned = Math.floor(players.reduce((s,p)=>s+p.score,0) / 10);
-        credits += earned; localStorage.setItem('8c_credits_v5', credits);
-        document.getElementById('game-over').classList.remove('hidden');
-        const statsBox = document.getElementById('final-stats-box');
-        statsBox.innerHTML = players.map((p,i) => `<div class="glass p-10 rounded-3xl border border-white/10"><div class="text-xs uppercase font-bold text-blue-400 mb-2">${i+1}. Oyuncu</div><div class="text-5xl font-orbitron font-bold">${Math.floor(p.score).toLocaleString()}</div></div>`).join('');
-        document.getElementById('final-earned').innerText = "+" + earned.toLocaleString() + " C";
-    }
-
-    document.getElementById('start-btn').onclick = startGame;
-    document.getElementById('retry-btn').onclick = startGame;
-    
-    document.getElementById('back-to-menu-btn').onclick = () => { 
-        document.getElementById('game-over').classList.add('hidden'); 
-        document.getElementById('game-hud').classList.add('hidden');
-        document.getElementById('menu-screen').style.display = 'flex'; 
-        
-        // Puan sıfırlama (görsel olarak)
-        document.getElementById('hud-score').innerText = '0';
-        
-        setMenuCamera();
-        updateLobbyUI(); 
-    };
-    
-    // Klavye kontrolleri
-    window.addEventListener('keydown', e => keys[e.code] = true);
-    window.addEventListener('keyup', e => keys[e.code] = false);
-    
-    // Başlangıç Kurulumu
-    updateTimeStyle();
-    setMenuCamera();
-    updateLobbyUI();
-    animate();
-};
-</script>
+    </script>
 </body>
 </html>
